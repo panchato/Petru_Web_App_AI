@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Listado de Lotes</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nº Lote</th>
+            <th>Cliente</th>
+            <th>Productor</th>
+            <th>Variedad</th>
+            <th>Peso Neto</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for lot in lots %}
+        <tr>
+            <td>{{ '%03d' % lot.lot_number }}</td>
+            <td>
+                {% if lot.raw_material_reception.clients %}
+                    {% for client in lot.raw_material_reception.clients %}
+                        {{ client.name }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>
+                {% if lot.raw_material_reception.growers %}
+                    {% for grower in lot.raw_material_reception.growers %}
+                        {{ grower.name }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>{{ lot.variety.name }}</td>
+            <td>
+                {% if lot.net_weight == 0 %}
+                <a href="{{ url_for('register_full_truck_weight', lot_id=lot.id) }}">Registrar Peso</a>
+                {% else %}
+                {{ lot.net_weight }}
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5">No se econtraron lotes en la base de datos.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+

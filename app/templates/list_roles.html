@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Listado de Roles</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Rol</th>
+                <th scope="col">Descripción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for role in roles %}
+            <tr>
+                <th scope="row">{{ loop.index }}</th>
+                <td>{{ role.name }}</td>
+                <td>{{ role.description }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6">No se encontraron roles en la base de datos.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

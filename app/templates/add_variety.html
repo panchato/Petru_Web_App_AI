@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Agregar Nueva Variedad</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="form-group">{{ form.name.label }} {{ form.name(class="form-control") }}</div><br>
+    <div>{{ form.submit(class="btn btn-primary") }}</div>
+</form>
+{% endblock %}

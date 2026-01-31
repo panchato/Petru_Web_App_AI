@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% block content %}
+<script>
+    $(document).ready(function() {
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          var errorMessage = "{{ messages[0] }}";
+          $('.modal-body').text(errorMessage);
+          $('#errorModal').modal('show');
+        {% endif %}
+      {% endwith %}
+    });
+
+    function updateShelledWeight() {
+        const extraLight = parseFloat($('#extra_light').val()) || 0;
+        const light = parseFloat($('#light').val()) || 0;
+        const lightAmber = parseFloat($('#light_amber').val()) || 0;
+        const amber = parseFloat($('#amber').val()) || 0;
+        const total = extraLight + light + lightAmber + amber;
+        if (total > 0) {
+            $('#shelled_weight').val(total.toFixed(2));
+        } else {
+            $('#shelled_weight').val('');
+        }
+    }
+
+    function updateYieldPercentage() {
+        const inshell = parseFloat($('#inshell_weight').val());
+        const shelled = parseFloat($('#shelled_weight').val());
+        if (!isNaN(inshell) && inshell > 0 && !isNaN(shelled)) {
+            const yieldPct = (shelled / inshell) * 100;
+            $('#yieldpercentage').val(yieldPct.toFixed(2));
+        } else {
+            $('#yieldpercentage').val('');
+        }
+    }
+
+    function formatYieldPercentage() {
+        const current = parseFloat($('#yieldpercentage').val());
+        if (!isNaN(current)) {
+            $('#yieldpercentage').val(current.toFixed(2));
+        }
+    }
+
+    function updateUnits() {
+        const less30 = parseInt($('#lessthan30').val(), 10) || 0;
+        const between3032 = parseInt($('#between3032').val(), 10) || 0;
+        const between3234 = parseInt($('#between3234').val(), 10) || 0;
+        const between3436 = parseInt($('#between3436').val(), 10) || 0;
+        const morethan36 = parseInt($('#morethan36').val(), 10) || 0;
+        const totalUnits = less30 + between3032 + between3234 + between3436 + morethan36;
+        $('#units').val(totalUnits);
+    }
+
+    $(document).on('change', '#extra_light, #light, #light_amber, #amber', function() {
+        updateShelledWeight();
+        updateYieldPercentage();
+    });
+    $(document).on('change', '#lessthan30, #between3032, #between3234, #between3436, #morethan36', updateUnits);
+    $(document).on('change', '#inshell_weight', updateYieldPercentage);
+    $(document).ready(function() {
+        updateShelledWeight();
+        updateUnits();
+        formatYieldPercentage();
+    });
+    </script>
+
+<div class="container">
+    <h2>Control de Calidad de Recepciones</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+            {{ form.lot_id.label(class="form-label") }}
+            {{ form.lot_id(class="form-select") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.analyst.label(class="form-label") }}
+            {{ form.analyst(class="form-control") }}
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                {{ form.date.label(class="form-label") }}
+                {{ form.date(class="form-control") }}
+            </div>
+            <div class="form-group col-md-6">
+                {{ form.time.label(class="form-label") }}
+                {{ form.time(class="form-control") }}
+            </div>
+        </div><br>
+        <h3>Peso y Rendimiento</h3>
+        <div class="form-group">
+            {{ form.units.label(class="form-label") }}
+            {{ form.units(class="form-control bg-light", readonly=true, value=form.units.data or 0) }}
+        </div>
+
+        <div class="form-group">
+            {{ form.inshell_weight.label(class="form-label") }}
+            {{ form.inshell_weight(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.shelled_weight.label(class="form-label") }}
+            {{ form.shelled_weight(class="form-control bg-light", readonly=true) }}
+        </div>
+
+        <div class="form-group">
+            {{ form.yieldpercentage.label(class="form-label") }}
+            {{ form.yieldpercentage(class="form-control bg-light", readonly=true) }}
+        </div><br>
+        <h3>Colores</h3>
+        <div class="form-group">
+            {{ form.extra_light.label(class="form-label") }}
+            {{ form.extra_light(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.light.label(class="form-label") }}
+            {{ form.light(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.light_amber.label(class="form-label") }}
+            {{ form.light_amber(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.amber.label(class="form-label") }}
+            {{ form.amber(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.yellow.label(class="form-label") }}
+            {{ form.yellow(class="form-control") }}
+        </div><br>
+        <h3>Calibres</h3>
+        <div class="form-group">
+            {{ form.lessthan30.label(class="form-label") }}
+            {{ form.lessthan30(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.between3032.label(class="form-label") }}
+            {{ form.between3032(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.between3234.label(class="form-label") }}
+            {{ form.between3234(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.between3436.label(class="form-label") }}
+            {{ form.between3436(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.morethan36.label(class="form-label") }}
+            {{ form.morethan36(class="form-control") }}
+        </div><br>
+        <h3>Daños Externos</h3>
+        <div class="form-group">
+            {{ form.broken_walnut.label(class="form-label") }}
+            {{ form.broken_walnut(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.split_walnut.label(class="form-label") }}
+            {{ form.split_walnut(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.light_stain.label(class="form-label") }}
+            {{ form.light_stain(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.serious_stain.label(class="form-label") }}
+            {{ form.serious_stain(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.adhered_hull.label(class="form-label") }}
+            {{ form.adhered_hull(class="form-control") }}
+        </div><br>
+        <h3>Daños Internos</h3>
+        <div class="form-group">
+            {{ form.shrivel.label(class="form-label") }}
+            {{ form.shrivel(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.empty.label(class="form-label") }}
+            {{ form.empty(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.insect_damage.label(class="form-label") }}
+            {{ form.insect_damage(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.inactive_fungus.label(class="form-label") }}
+            {{ form.inactive_fungus(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.active_fungus.label(class="form-label") }}
+            {{ form.active_fungus(class="form-control") }}
+        </div><br>
+        <h3>Imágenes de Calidad</h3>
+        <div class="form-group">
+            {{ form.inshell_image.label(class="form-label") }}
+            {{ form.inshell_image(class="form-control-file") }}
+            {% if form.inshell_image.errors %}
+                <div class="alert alert-danger">
+                    {{ form.inshell_image.errors[0] }}
+                </div>
+                {% endif %}
+        </div>
+        <div class="form-group">
+            {{ form.shelled_image.label(class="form-label") }}
+            {{ form.shelled_image(class="form-control-file") }}
+            {% if form.shelled_image.errors %}
+                <div class="alert alert-danger">
+                    {{ form.shelled_image.errors[0] }}
+                </div>
+            {% endif %}
+        </div><br>
+        <div>{{ form.submit(class="btn btn-primary") }}</div>
+    </form>
+</div>
+<!-- Error Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="errorModalLabel">Error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            <!-- Error message will be injected here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

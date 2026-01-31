@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Asignar Rol a Usuario</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">{{ form.user_id.label }} {{ form.user_id(class="form-control") }}</div>
+        <div class="form-group"> {{ form.role_id.label }} {{ form.role_id(class="form-control") }}</div><br>
+        <div class="form-group">{{ form.submit(class="btn btn-primary") }}</div>
+    </form>
+{% endblock %}

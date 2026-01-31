@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Listado de Recepciones</h2>
+<div class="table-responsive">
+<table class="table table-striped" id="myTable">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Fecha y Hora</th>
+            <th scope="col">Guia</th>
+            <th scope="col">Cliente</th>
+            <th scope="col">Productor</th>
+            <th scope="col">Lotes</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for reception in receptions %}
+        <tr>
+            <td>
+                <button class="btn btn-info btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#details{{ reception.id }}" aria-expanded="false" aria-controls="details{{ reception.id }}">
+                    +</button>
+            </td>
+            <td>{{ reception.date.strftime('%d-%m-%Y') }} {{ reception.time.strftime('%H:%M') }}</td>
+            <td>{{ reception.waybill }}</td>
+            <td>
+                {% for client in reception.clients %}
+                    {{ client.name }}
+                {% endfor %}
+            </td>
+            <td>
+                {% for grower in reception.growers %}
+                    {{ grower.name }}
+                {% endfor %}
+            </td>
+            <td>
+                <div class="collapse" id="details{{ reception.id }}">
+                {% for lot in reception.lots %}
+                    Lote {{ '{:03}'.format(lot.lot_number) }}
+                {% endfor %}
+            </div>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5">No se encontraron recepciones en la base de datos.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

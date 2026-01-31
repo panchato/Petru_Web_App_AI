@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+<script>
+    $(document).ready(function() {
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        var category = "{{ messages[0][0] }}";
+        var message = "{{ messages[0][1] }}";
+
+        // HTML structure for the modal content based on the message category
+        if (category === 'success') {
+            $('.modal-body').html('<div class="alert alert-success" role="alert">' + message + '</div>');
+            $('.modal-footer').html('<button type="button" class="btn btn-secondary" onclick="window.location.href=\'{{ url_for('index') }}\'">Home</button>' +
+                                    '<button type="button" class="btn btn-primary" onclick="window.location.href=\'{{ url_for('create_lot', reception_id=reception_id) }}\'">Crear otro Lote</button>');
+        } else if (category === 'warning') {
+            $('.modal-body').html('<div class="alert alert-warning" role="alert">' + message + '</div>');
+            $('.modal-footer').html('<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>');
+        } else {
+            $('.modal-body').text(message);
+            $('.modal-footer').html('<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>');
+        }
+        $('#Modal').modal('show');
+        {% endif %}
+        {% endwith %}
+    });
+</script>
+
+<h2>Creación de Lotes - Segundo Paso</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="row">
+        <div class="col-md-4 form-group">{{ form.client_name.label }} {{ form.client_name(class="form-control") }}</div>
+        <div class="col-md-4 form-group">{{ form.grower_name.label }} {{ form.grower_name(class="form-control") }}</div>
+        <div class="col-md-4 form-group">{{ form.waybill.label }} {{ form.waybill(class="form-control") }}</div>
+    </div>
+    <div class="form-group">{{ form.variety_id.label }} {{ form.variety_id(class="form-select") }}</div>
+    <div class="form-group">{{ form.rawmaterialpackaging_id.label }} {{ form.rawmaterialpackaging_id(class="form-select") }}</div>
+    <div class="form-group">{{ form.packagings_quantity.label }} {{ form.packagings_quantity(class="form-control") }}</div>
+    <div class="form-group">{{ form.lot_number.label }} {{ form.lot_number(class="form-control") }}</div>
+    <div class="form-check mt-3">{{ form.is_last_lot(class="form-check-input") }} {{ form.is_last_lot.label(class="form-check-label") }}</div><br>
+    <div>{{ form.submit(class="btn btn-primary") }}</div><br>
+</form>
+<!-- Modal -->
+<div class="modal fade" id="Modal" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ModalLabel">Mensaje del Sistema</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            <!-- Message will be injected here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+

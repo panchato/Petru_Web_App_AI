@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Listado de Envases Matera Prima</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Nombre</th>
+            <th scope="col">Tara</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for rmp in rmps %}
+        <tr>
+            <th scope="row">{{ loop.index }}</th>
+            <td>{{ rmp.name }}</td>
+            <td>{{ rmp.tare }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="6">No se encontraron envases en la base de datos.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

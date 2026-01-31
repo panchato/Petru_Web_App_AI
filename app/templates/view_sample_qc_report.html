@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container text-center">
+        <h2>Control de Calidad de Muestra</h2>
+    </div>
+    <br>
+
+    <div class="container">
+        <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Productor</th>
+                <th scope="col">Muestra traida por</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ report.grower }}</td>
+                <td>{{ report.brought_by }}</td>
+              </tr>
+            </tbody>
+        </table>
+    </div>
+    <br>
+    <br>
+
+    <div class="container text-center">
+        <h4>Información del Análisis</h4>
+    </div>
+    <br>
+
+    <div class="container">
+        <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Analista</th>
+                <th scope="col">Fecha</th>
+                <th scope="col">Hora</th>
+                <th scope="col">Unidades</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ report.analyst }}</td>
+                <td>{{ report.date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ report.time.strftime('%H:%M') }}</td>
+                <td>{{ report.units }}</td>
+              </tr>
+            </tbody>
+        </table>
+    </div>
+    <br>
+    <br>
+
+    <div class="container text-center">
+        <h4>Detalle de Cáscara</h4>
+    </div>
+    <br>
+
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Calibre</th>
+                            <th scope="col">Unidades</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>30/-</td>
+                            <td>{{ report.lessthan30 }}</td>
+                        </tr>
+                        <tr>
+                            <td>30/32</td>
+                            <td>{{ report.between3032 }}</td>
+                        </tr>
+                        <tr>
+                            <td>32/34</td>
+                            <td>{{ report.between3234 }}</td>
+                        </tr>
+                        <tr>
+                            <td>34/36</td>
+                            <td>{{ report.between3436 }}</td>
+                        </tr>
+                        <tr>
+                            <td>36/+</td>
+                            <td>{{ report.morethan36 }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Defecto Externo</th>
+                            <th scope="col">Unidades</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Cáscara Rota</td>
+                            <td>{{ report.broken_walnut }}</td>
+                        </tr>
+                        <tr>
+                            <td>Casco Abierto</td>
+                            <td>{{ report.split_walnut }}</td>
+                        </tr>
+                        <tr>
+                            <td>Mancha Leve</td>
+                            <td>{{ report.light_stain }}</td>
+                        </tr>
+                        <tr>
+                            <td>Mancha Grave</td>
+                            <td>{{ report.serious_stain }}</td>
+                        </tr>
+                        <tr>
+                            <td>Pelón Adherido</td>
+                            <td>{{ report.adhered_hull }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <br>
+    <br>
+
+    <div class="container text-center">
+        <h4>Detalle de Pulpa</h4>
+    </div>
+    <br>
+
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Item</th>
+                            <th scope="col">Peso (grs.)</th>
+                            <th scope="col">Porcentaje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Peso con Cáscara</td>
+                            <td>{{ report.inshell_weight }}</td>
+                            <td>100.00%</td>
+                        </tr>
+                        <tr>
+                            <td>Peso de Pulpa</td>
+                            <td>{{ report.shelled_weight }}</td>
+                            <td>{{ report.yieldpercentage | round(2) }}%</td>
+                        </tr>
+                        <tr>
+                            <td>Extra Light</td>
+                            <td>{{ report.extra_light }}</td>
+                            <td>{{ (report.extra_light / report.shelled_weight * 100) | round(2) if report.shelled_weight != 0 else '0.00' }}%</td>
+                        </tr>
+                        <tr>
+                            <td>Light</td>
+                            <td>{{ report.light }}</td>
+                            <td>{{ (report.light / report.shelled_weight * 100) | round(2) if report.shelled_weight != 0 else '0.00' }}%</td>
+                        </tr>
+                        <tr>
+                            <td>Light Amber</td>
+                            <td>{{ report.light_amber }}</td>
+                            <td>{{ (report.light_amber / report.shelled_weight * 100) | round(2) if report.shelled_weight != 0 else '0.00' }}%</td>
+                        </tr>
+                        <tr>
+                            <td>Amber</td>
+                            <td>{{ report.amber }}</td>
+                            <td>{{ (report.amber / report.shelled_weight * 100) | round(2) if report.shelled_weight != 0 else '0.00' }}%</td>
+                        </tr>
+                        <tr>
+                            <td>Amarilla</td>
+                            <td>{{ report.yellow }}</td>
+                            <td>{{ (report.yellow / report.shelled_weight * 100) | round(2) if report.shelled_weight != 0 else '0.00' }}%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Defecto Interno</th>
+                            <th scope="col">Unidades</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Reseca</td>
+                            <td>{{ report.shrivel }}</td>
+                        </tr>
+                        <tr>
+                            <td>Vana</td>
+                            <td>{{ report.empty }}</td>
+                        </tr>
+                        <tr>
+                            <td>Daño de Insecto</td>
+                            <td>{{ report.insect_damage }}</td>
+                        </tr>
+                        <tr>
+                            <td>Hongo Inactivo</td>
+                            <td>{{ report.inactive_fungus }}</td>
+                        </tr>
+                        <tr>
+                            <td>Hongo Activo</td>
+                            <td>{{ report.active_fungus }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <br>
+    <br>
+
+    {% if report.inshell_image_path %}
+    <div class="container">
+        <img src="{{ url_for('static', filename=report.inshell_image_path) }}" alt="Inshell Image" style="max-width: 100%; height: auto;">
+    </div>
+    {% endif %}
+    {% if report.shelled_image_path %}
+    <div class="container">
+        <img src="{{ url_for('static', filename=report.shelled_image_path) }}" alt="Shelled Image" style="max-width: 100%; height: auto;">
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

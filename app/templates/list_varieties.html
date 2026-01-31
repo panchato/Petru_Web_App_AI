@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Listado de Variedades</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Variedad</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for variety in varieties %}
+        <tr>
+            <th scope="row">{{ loop.index }}</th>
+            <td>{{ variety.name }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="6">No se encontraron variedades en la base de datos.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

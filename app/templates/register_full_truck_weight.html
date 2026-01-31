@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Registrar Peso de Romana para Lote {{ '%03d' % lot.lot_number }}</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.loaded_truck_weight.label }} {{ form.loaded_truck_weight(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.empty_truck_weight.label }} {{ form.empty_truck_weight(class="form-control") }}
+        </div><br>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+{% endblock %}

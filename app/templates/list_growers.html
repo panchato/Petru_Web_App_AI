@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Listado de Productores</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Razón Social</th>
+            <th scope="col">Rut</th>
+            <th scope="col">Código CSG</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for grower in growers %}
+        <tr>
+            <th scope="row">{{ loop.index }}</th>
+            <td>{{ grower.name }}</td>
+            <td>{{ grower.tax_id }}</td>
+            <td>{{ grower.csg_code }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="6">No se encontraron productores en la base de datos.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

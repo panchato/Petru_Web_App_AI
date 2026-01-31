@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Intranet - Agroindustrial Petru SpA</h1>
+    {% if current_user.is_authenticated %}
+        <p>Hola, {{ current_user.name }}!</p>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    {% else %}
+        <a href="{{ url_for('login') }}">Login</a>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>List of Users</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Nombre y Apellido</th>
+            <th scope="col">Email</th>
+            <th scope="col">Celular</th>
+            <th scope="col">Roles</th>
+            <th scope="col">Areas</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>
+                <button class="btn btn-info btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#details{{ user.id }}" aria-expanded="false" aria-controls="details{{ user.id }}">
+                    +</button>
+            </td>
+            <td>{{ user.name }} {{ user.last_name }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.phone_number }}</td>
+            <td>
+                <div class="collapse" id="details{{ user.id }}">
+                        {% for role in user.roles %}
+                        {{ role.name }}
+                        {% endfor %}
+                </div>
+            </td>
+            <td>
+                <div class="collapse" id="details{{ user.id }}">
+                        {% for area in user.areas %}
+                        {{ area.name }}
+                        {% endfor %}
+                </div>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="7">No se encontraron usuarios en la base de datos.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Intranet - Agroindustrial Petru SpA</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('index') }}">Home</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    {% if current_user.is_authenticated and current_user.has_role('Admin') %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Usuarios
+                        </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('add_user') }}">Agregar Nuevo Usuario</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('list_users') }}">Listado de Usuarios</a></li>
+                            </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Roles
+                        </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('add_role') }}">Agregar Nuevo Rol</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('list_roles') }}">Listado de Roles</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('assign_role') }}">Asignar Rol a Usuario</a></li>
+                            </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Areas
+                        </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('add_area') }}">Agregar Nueva Area</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('list_areas') }}">Listado de Areas</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('assign_area') }}">Asignar Area a Usuario</a></li>
+                            </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Clientes
+                        </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('add_client') }}">Agregar Nuevo Cliente</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('list_clients') }}">Listado de Clientes</a></li>
+                            </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Productores
+                        </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('add_grower') }}">Agregar Nuevo Productor</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('list_growers') }}">Listado de Productores</a></li>
+                            </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                           Variedades
+                        </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('add_variety') }}">Agregar Nueva Variedad</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('list_varieties') }}">Listado de Variedades</a></li>
+                            </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                           Envases MP
+                        </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('add_raw_material_packaging') }}">Agregar Nuevo Envase MP</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('list_raw_material_packagings') }}">Listado de Envases MP</a></li>
+                            </ul>
+                    </li>
+                    {% endif %}
+                    {% if current_user.is_authenticated and current_user.is_active and not current_user.is_external and (current_user.has_role('Admin') or current_user.from_area('Materia Prima')) %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Recepciones y Lotes
+                        </a>
+                            <ul class="dropdown-menu">
+                                {% if current_user.has_role('Admin') or (current_user.from_area('Materia Prima') and current_user.has_role('Contribuidor')) %}
+                                <li><a class="dropdown-item" href="{{ url_for('create_raw_material_reception') }}">Crear Recepción</a></li>
+                                {% endif %}
+                                {% if current_user.has_role('Admin') or (current_user.from_area('Materia Prima') and current_user.has_role('Contribuidor')) %}
+                                <li><a class="dropdown-item" href="{{ url_for('list_rmrs') }}">Listado de Recepciones</a></li>
+                                {% endif %}
+                                {% if current_user.has_role('Admin') or (current_user.from_area('Materia Prima') and current_user.has_role('Lector')) %}
+                                <li><a class="dropdown-item" href="{{ url_for('list_lots') }}">Listado de Lotes</a></li>
+                                {% endif %}
+                            </ul>
+                    </li>
+                    {% endif %}
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            QC Lotes
+                        </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('create_lot_qc') }}">Crear QC Lotes</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('create_sample_qc') }}">Crear QC Muestras</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('list_lot_qc_reports') }}">Listado de QC Lotes</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('list_sample_qc_reports') }}">Listado de QC Muestras</a></li>
+                            </ul>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>

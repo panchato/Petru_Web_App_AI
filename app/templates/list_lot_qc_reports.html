@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Lot QC Reports</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Lot ID</th>
+                <th>Date</th>
+                <th>Analyst</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in lot_qc_records %}
+            <tr>
+                <td>{{ record.lot_id }}</td>
+                <td>{{ record.date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ record.analyst }}</td>
+                <td>
+                    <a href="{{ url_for('view_lot_qc_report', report_id=record.id) }}" class="btn btn-primary btn-sm">View Report</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6">No se encontraron análisis de calidad en la base de datos.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

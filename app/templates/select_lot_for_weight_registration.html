@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Seleccionar Lote - Petru{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-12">
+        <h2>Seleccionar Lote para Registro de Peso</h2>
+        <p class="text-muted">Lotes pendientes de registro de peso</p>
+
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Lote</th>
+                    <th>Variedad</th>
+                    <th>Envase</th>
+                    <th>Cantidad</th>
+                    <th>Accion</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lot in lots %}
+                <tr>
+                    <td>{{ lot.lot_number }}</td>
+                    <td>{{ lot.variety.name if lot.variety else 'N/A' }}</td>
+                    <td>{{ lot.raw_material_packaging.name if lot.raw_material_packaging else 'N/A' }}</td>
+                    <td>{{ lot.packagings_quantity }}</td>
+                    <td>
+                        <a href="{{ url_for('register_full_truck_weight', lot_id=lot.id) }}" class="btn btn-success btn-sm">
+                            Registrar Peso
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">No hay lotes pendientes de pesaje</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

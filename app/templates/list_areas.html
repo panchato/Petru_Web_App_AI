@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Listado de Areas</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Area</th>
+                <th scope="col">Descripción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for area in areas %}
+            <tr>
+                <th scope="row">{{ loop.index }}</th>
+                <td>{{ area.name }}</td>
+                <td>{{ area.description }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6">No se encontraron áreas en la base de datos.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
