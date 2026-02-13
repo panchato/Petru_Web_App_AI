@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Operacional - PETRU</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #f2f7f5;
+            --panel: #ffffff;
+            --ink: #173426;
+            --muted: #61756b;
+            --brand: #1f7a4f;
+            --accent: #f4a259;
+            --alert: #b3261e;
+            --border: #d9e5df;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: radial-gradient(circle at 15% 0%, #d9eadf, var(--bg) 45%);
+            color: var(--ink);
+            font-family: "Segoe UI", "Tahoma", sans-serif;
+        }
+        .screen {
+            height: 100%;
+            padding: 20px;
+            display: grid;
+            grid-template-rows: auto auto 1fr auto auto;
+            gap: 12px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 36px;
+            letter-spacing: 0.3px;
+        }
+        .meta {
+            font-size: 18px;
+            color: var(--muted);
+            display: flex;
+            gap: 20px;
+        }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+        }
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 10px 14px;
+            box-shadow: 0 4px 16px rgba(31, 122, 79, 0.08);
+        }
+        .kpi-title {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+        .kpi-value {
+            font-size: 34px;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--ink);
+        }
+        .middle {
+            display: grid;
+            grid-template-columns: 2fr 2fr 2fr 1.3fr;
+            gap: 10px;
+            min-height: 0;
+        }
+        .middle .card {
+            display: flex;
+            flex-direction: column;
+        }
+        .chart-wrap {
+            flex: 1;
+            min-height: 240px;
+        }
+        .chart-wrap canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        .list {
+            display: grid;
+            gap: 8px;
+            align-content: start;
+        }
+        .list-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            padding-bottom: 4px;
+            border-bottom: 1px dashed var(--border);
+        }
+        .status-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .status-pill {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .status-pill .name {
+            font-size: 16px;
+            color: var(--muted);
+        }
+        .status-pill .value {
+            font-size: 26px;
+            font-weight: 700;
+        }
+        .alerts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .alert-card {
+            border-radius: 12px;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            background: #fff;
+        }
+        .alert-card h3 {
+            margin: 0 0 8px;
+            font-size: 15px;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+        .alert-card .val {
+            font-size: 30px;
+            font-weight: 700;
+        }
+        .risk { color: var(--alert); }
+        .ok { color: var(--brand); }
+    </style>
+</head>
+<body>
+    <main class="screen">
+        <section class="header">
+            <h1>Panel Operacional PETRU</h1>
+            <div class="meta">
+                <span id="timestamp">Actualizado: --</span>
+                <span id="version">Versión: --</span>
+            </div>
+        </section>
+
+        <section class="kpi-grid">
+            <article class="card"><div class="kpi-title">Recepciones Hoy</div><div class="kpi-value" id="kpi-recepciones">0</div></article>
+            <article class="card"><div class="kpi-title">Lotes Hoy</div><div class="kpi-value" id="kpi-lotes">0</div></article>
+            <article class="card"><div class="kpi-title">Kg Netos Hoy</div><div class="kpi-value" id="kpi-kg">0</div></article>
+            <article class="card"><div class="kpi-title">QCs Hoy</div><div class="kpi-value" id="kpi-qcs">0</div></article>
+            <article class="card"><div class="kpi-title">Fumigaciones Activas</div><div class="kpi-value" id="kpi-fum-act">0</div></article>
+            <article class="card"><div class="kpi-title">Fumigaciones Completadas Hoy</div><div class="kpi-value" id="kpi-fum-comp">0</div></article>
+        </section>
+
+        <section class="middle">
+            <article class="card">
+                <div class="kpi-title">Lotes Creados por Día (7 días)</div>
+                <div class="chart-wrap"><canvas id="chartLots"></canvas></div>
+            </article>
+            <article class="card">
+                <div class="kpi-title">Kg Netos por Día (7 días)</div>
+                <div class="chart-wrap"><canvas id="chartKg"></canvas></div>
+            </article>
+            <article class="card">
+                <div class="kpi-title">Rendimiento Promedio QC por Día (7 días)</div>
+                <div class="chart-wrap"><canvas id="chartYield"></canvas></div>
+            </article>
+            <article class="card">
+                <div class="kpi-title">Top Defectos QC (7 días)</div>
+                <div class="list" id="top-defects"></div>
+            </article>
+        </section>
+
+        <section class="status-strip">
+            <article class="status-pill"><span class="name">Pendiente</span><span class="value" id="pipe-1">0</span></article>
+            <article class="status-pill"><span class="name">Asignado</span><span class="value" id="pipe-2">0</span></article>
+            <article class="status-pill"><span class="name">En Proceso</span><span class="value" id="pipe-3">0</span></article>
+            <article class="status-pill"><span class="name">Completado</span><span class="value" id="pipe-4">0</span></article>
+        </section>
+
+        <section class="alerts">
+            <article class="alert-card">
+                <h3>Recepciones Abiertas</h3>
+                <div class="val ok" id="alert-open-receptions">0</div>
+            </article>
+            <article class="alert-card">
+                <h3>Lotes Sin QC</h3>
+                <div class="val risk" id="alert-no-qc">0</div>
+            </article>
+            <article class="alert-card">
+                <h3>Riesgos Operacionales</h3>
+                <div class="list">
+                    <div class="list-row"><span>Lotes sin QC >24h</span><strong id="alert-no-qc-24h">0</strong></div>
+                    <div class="list-row"><span>Fumigaciones >48h</span><strong id="alert-fum-delay">0</strong></div>
+                    <div class="list-row"><span>% QC fuera rango (7d)</span><strong id="alert-out-range">0%</strong></div>
+                </div>
+            </article>
+        </section>
+    </main>
+
+    <script>
+        let lotsChart;
+        let kgChart;
+        let yieldChart;
+        let currentVersion = "";
+
+        function createChart(ctx, type, label, color) {
+            return new Chart(ctx, {
+                type: type,
+                data: { labels: [], datasets: [{ label: label, data: [], borderColor: color, backgroundColor: color + "66", borderWidth: 2, tension: 0.28 }] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { color: "#173426" } }, x: { ticks: { color: "#173426" } } }
+                }
+            });
+        }
+
+        function defectLabel(key) {
+            const map = {
+                broken_walnut: "Cascara Partida",
+                split_walnut: "Casco Abierto",
+                light_stain: "Mancha Leve",
+                serious_stain: "Mancha Grave",
+                adhered_hull: "Pelon Adherido",
+                shrivel: "Nuez Reseca",
+                empty: "Nuez Vana",
+                insect_damage: "Dano Insecto",
+                inactive_fungus: "Hongo Inactivo",
+                active_fungus: "Hongo Activo"
+            };
+            return map[key] || key;
+        }
+
+        async function loadSummary() {
+            const response = await fetch("/api/dashboard/summary", { cache: "no-store" });
+            const data = await response.json();
+            const k = data.kpis;
+            document.getElementById("kpi-recepciones").textContent = k.recepciones_hoy;
+            document.getElementById("kpi-lotes").textContent = k.lotes_hoy;
+            document.getElementById("kpi-kg").textContent = k.kg_netos_hoy_fmt;
+            document.getElementById("kpi-qcs").textContent = k.qcs_hoy;
+            document.getElementById("kpi-fum-act").textContent = k.fumigaciones_activas;
+            document.getElementById("kpi-fum-comp").textContent = k.fumigaciones_completadas_hoy;
+
+            document.getElementById("pipe-1").textContent = data.pipeline.status_1_pendiente;
+            document.getElementById("pipe-2").textContent = data.pipeline.status_2_asignado;
+            document.getElementById("pipe-3").textContent = data.pipeline.status_3_en_proceso;
+            document.getElementById("pipe-4").textContent = data.pipeline.status_4_completado;
+
+            document.getElementById("alert-open-receptions").textContent = k.recepciones_abiertas;
+            document.getElementById("alert-no-qc").textContent = k.lotes_sin_qc;
+            document.getElementById("alert-no-qc-24h").textContent = data.alerts.lotes_sin_qc_24h;
+            document.getElementById("alert-fum-delay").textContent = data.alerts.fumigaciones_retrasadas_48h;
+            document.getElementById("alert-out-range").textContent = `${k.qc_fuera_rango_pct_7d}%`;
+
+            const defectsContainer = document.getElementById("top-defects");
+            defectsContainer.innerHTML = "";
+            data.top_defectos_7d.forEach(item => {
+                const row = document.createElement("div");
+                row.className = "list-row";
+                row.innerHTML = `<span>${defectLabel(item.defecto)}</span><strong>${item.total}</strong>`;
+                defectsContainer.appendChild(row);
+            });
+        }
+
+        async function loadTimeseries() {
+            const response = await fetch("/api/dashboard/timeseries", { cache: "no-store" });
+            const data = await response.json();
+            lotsChart.data.labels = data.labels;
+            lotsChart.data.datasets[0].data = data.series.lotes_por_dia;
+            lotsChart.update();
+
+            kgChart.data.labels = data.labels;
+            kgChart.data.datasets[0].data = data.series.kg_netos_por_dia;
+            kgChart.update();
+
+            yieldChart.data.labels = data.labels;
+            yieldChart.data.datasets[0].data = data.series.yield_promedio_por_dia;
+            yieldChart.update();
+        }
+
+        async function checkVersionAndRefresh() {
+            const response = await fetch("/api/dashboard/version", { cache: "no-store" });
+            const data = await response.json();
+            const compactVersion = String(data.version).slice(-16);
+            document.getElementById("version").textContent = `Version: ${compactVersion}`;
+            if (!currentVersion) {
+                currentVersion = data.version;
+                return;
+            }
+            if (data.version !== currentVersion) {
+                currentVersion = data.version;
+                await refreshDashboard();
+            }
+        }
+
+        async function refreshDashboard() {
+            await Promise.all([loadSummary(), loadTimeseries()]);
+            document.getElementById("timestamp").textContent = `Actualizado: ${new Date().toLocaleString()}`;
+        }
+
+        window.addEventListener("DOMContentLoaded", async () => {
+            lotsChart = createChart(document.getElementById("chartLots"), "bar", "Lotes", "#1f7a4f");
+            kgChart = createChart(document.getElementById("chartKg"), "bar", "Kg Netos", "#f4a259");
+            yieldChart = createChart(document.getElementById("chartYield"), "line", "Yield", "#0d5d8f");
+            await refreshDashboard();
+            await checkVersionAndRefresh();
+            setInterval(checkVersionAndRefresh, 5000);
+            setInterval(refreshDashboard, 60000);
+        });
+    </script>
+</body>
+</html>

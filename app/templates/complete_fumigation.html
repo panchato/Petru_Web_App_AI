@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+
+    <h2>Completar Fumigaci&oacute;n - {{ fumigation.work_order }}</h2>
+
+    <div class="mb-3">
+        <p><strong>Orden de Trabajo:</strong> {{ fumigation.work_order }}</p>
+        <p><strong>Lotes:</strong>
+            {% for lot in fumigation.lots %}
+            Lote {{ '{:03}'.format(lot.lot_number) }}{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+            {{ form.real_end_date.label(class="form-label") }}
+            {{ form.real_end_date(class="form-control", type="date", required=True) }}
+            {% if form.real_end_date.errors %}
+            <div class="alert alert-danger">{{ form.real_end_date.errors[0] }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.real_end_time.label(class="form-label") }}
+            {{ form.real_end_time(class="form-control", type="time", required=True) }}
+            {% if form.real_end_time.errors %}
+            <div class="alert alert-danger">{{ form.real_end_time.errors[0] }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.certificate_doc.label(class="form-label") }}
+            {{ form.certificate_doc(class="form-control", accept=".pdf") }}
+            {% if form.certificate_doc.errors %}
+            <div class="alert alert-danger">{{ form.certificate_doc.errors[0] }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-actions">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('list_fumigations') }}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

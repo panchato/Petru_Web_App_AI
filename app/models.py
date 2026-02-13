@@ -3,6 +3,36 @@ from datetime import datetime, date
 from app import db, login_manager
 from app.basemodel import BaseModel
 
+class QCMixin(object):
+    date = db.Column(db.Date, default=date.today)
+    time = db.Column(db.Time, default=lambda: datetime.now().time())
+    units = db.Column(db.Integer, nullable=False, default=0)
+    inshell_weight = db.Column(db.Float, nullable=False)
+    shelled_weight = db.Column(db.Float, nullable=False)
+    yieldpercentage = db.Column(db.Float, nullable=False)
+    lessthan30 = db.Column(db.Integer, nullable=False)
+    between3032 = db.Column(db.Integer, nullable=False)
+    between3234 = db.Column(db.Integer, nullable=False)
+    between3436 = db.Column(db.Integer, nullable=False)
+    morethan36 = db.Column(db.Integer, nullable=False)
+    broken_walnut = db.Column(db.Integer, nullable=False)
+    split_walnut = db.Column(db.Integer, nullable=False)
+    light_stain = db.Column(db.Integer, nullable=False)
+    serious_stain = db.Column(db.Integer, nullable=False)
+    adhered_hull = db.Column(db.Integer, nullable=False)
+    shrivel = db.Column(db.Integer, nullable=False)
+    empty = db.Column(db.Integer, nullable=False)
+    insect_damage = db.Column(db.Integer, nullable=False)
+    inactive_fungus = db.Column(db.Integer, nullable=False)
+    active_fungus = db.Column(db.Integer, nullable=False)
+    extra_light = db.Column(db.Float, nullable=False)
+    light = db.Column(db.Float, nullable=False)
+    light_amber = db.Column(db.Float, nullable=False)
+    amber = db.Column(db.Float, nullable=False)
+    yellow = db.Column(db.Float, nullable=False)
+    inshell_image_path = db.Column(db.String(255), nullable=True)
+    shelled_image_path = db.Column(db.String(255), nullable=True)
+
 # Association tables for many-to-many relationships
 area_user = db.Table('area_user',
     db.Column('area_id', db.Integer, db.ForeignKey('areas.id'), primary_key=True),
@@ -53,11 +83,13 @@ class Role(BaseModel):
     __tablename__ = 'roles'
     name = db.Column(db.String(64), nullable=False)
     description = db.Column(db.String(255), nullable=False)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
 
 class Area(BaseModel):
     __tablename__ = 'areas'
     name = db.Column(db.String(64), nullable=False)
     description = db.Column(db.String(255), nullable=False)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
 
 class Variety(BaseModel):
     __tablename__ = 'varieties'
@@ -87,7 +119,7 @@ class Grower(BaseModel):
     __tablename__ = 'growers'
     name = db.Column(db.String(128), nullable=False)
     tax_id = db.Column(db.String(10), nullable=False, unique=True)
-    csg_code = db.Column(db.String(10), default=0, nullable=False)
+    csg_code = db.Column(db.String(10), default="", nullable=False)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
 
     def __str__(self):
@@ -154,72 +186,16 @@ class FullTruckWeight(BaseModel):
     # One-to-One relationship
     lot_id = db.Column(db.Integer, db.ForeignKey('lots.id'))
 
-class LotQC(BaseModel):
+class LotQC(BaseModel, QCMixin):
     __tablename__ = 'lotsqc'
     lot_id = db.Column(db.Integer, db.ForeignKey('lots.id'))
     analyst = db.Column(db.String(64), nullable=True)
-    date = db.Column(db.Date, default=date.today)
-    time = db.Column(db.Time, default=lambda: datetime.utcnow().time())
-    units = db.Column(db.Integer, nullable=False, default=0)
-    inshell_weight = db.Column(db.Float, nullable=False)
-    shelled_weight = db.Column(db.Float, nullable=False)
-    yieldpercentage = db.Column(db.Float, nullable=False)
-    lessthan30 = db.Column(db.Integer, nullable=False)
-    between3032 = db.Column(db.Integer, nullable=False)
-    between3234 = db.Column(db.Integer, nullable=False)
-    between3436 = db.Column(db.Integer, nullable=False)
-    morethan36 = db.Column(db.Integer, nullable=False)
-    broken_walnut = db.Column(db.Integer, nullable=False)
-    split_walnut = db.Column(db.Integer, nullable=False)
-    light_stain = db.Column(db.Integer, nullable=False)
-    serious_stain = db.Column(db.Integer, nullable=False)
-    adhered_hull = db.Column(db.Integer, nullable=False)
-    shrivel = db.Column(db.Integer, nullable=False)
-    empty = db.Column(db.Integer, nullable=False)
-    insect_damage = db.Column(db.Integer, nullable=False)
-    inactive_fungus = db.Column(db.Integer, nullable=False)
-    active_fungus = db.Column(db.Integer, nullable=False)
-    extra_light = db.Column(db.Float, nullable=False)
-    light = db.Column(db.Float, nullable=False)
-    light_amber = db.Column(db.Float, nullable=False)
-    amber = db.Column(db.Float, nullable=False)
-    yellow = db.Column(db.Float, nullable=False)
-    inshell_image_path = db.Column(db.String(255), nullable=True)
-    shelled_image_path = db.Column(db.String(255), nullable=True)
 
-class SampleQC(BaseModel):
+class SampleQC(BaseModel, QCMixin):
     __tablename__ = 'samplesqc'
     grower = db.Column(db.String(64), unique=False, nullable=True)
     brought_by = db.Column(db.String(64), unique=False, nullable=True)
     analyst = db.Column(db.String(64), unique=False, nullable=True)
-    date = db.Column(db.Date, default=date.today)
-    time = db.Column(db.Time, default=lambda: datetime.utcnow().time())
-    units = db.Column(db.Integer, nullable=False, default=0)
-    inshell_weight = db.Column(db.Float, nullable=False)
-    shelled_weight = db.Column(db.Float, nullable=False)
-    yieldpercentage = db.Column(db.Float, nullable=False)
-    lessthan30 = db.Column(db.Integer, nullable=False)
-    between3032 = db.Column(db.Integer, nullable=False)
-    between3234 = db.Column(db.Integer, nullable=False)
-    between3436 = db.Column(db.Integer, nullable=False)
-    morethan36 = db.Column(db.Integer, nullable=False)
-    broken_walnut = db.Column(db.Integer, nullable=False)
-    split_walnut = db.Column(db.Integer, nullable=False)
-    light_stain = db.Column(db.Integer, nullable=False)
-    serious_stain = db.Column(db.Integer, nullable=False)
-    adhered_hull = db.Column(db.Integer, nullable=False)
-    shrivel = db.Column(db.Integer, nullable=False)
-    empty = db.Column(db.Integer, nullable=False)
-    insect_damage = db.Column(db.Integer, nullable=False)
-    inactive_fungus = db.Column(db.Integer, nullable=False)
-    active_fungus = db.Column(db.Integer, nullable=False)
-    extra_light = db.Column(db.Float, nullable=False)
-    light = db.Column(db.Float, nullable=False)
-    light_amber = db.Column(db.Float, nullable=False)
-    amber = db.Column(db.Float, nullable=False)
-    yellow = db.Column(db.Float, nullable=False)
-    inshell_image_path = db.Column(db.String(255), nullable=True)
-    shelled_image_path = db.Column(db.String(255), nullable=True)
 
 fumigation_lot = db.Table('fumigation_lot',
     db.Column('fumigation_id', db.Integer, db.ForeignKey('fumigations.id'), primary_key=True),
@@ -229,13 +205,13 @@ fumigation_lot = db.Table('fumigation_lot',
 class Fumigation(BaseModel):
     __tablename__ = 'fumigations'
     work_order = db.Column(db.String(64), unique=True, nullable=False)
-    start_date = db.Column(db.Date, nullable=False)
-    start_time = db.Column(db.Time, nullable=False)
+    real_start_date = db.Column(db.Date, nullable=True)
+    real_start_time = db.Column(db.Time, nullable=True)
     real_end_date = db.Column(db.Date, nullable=True)
     real_end_time = db.Column(db.Time, nullable=True)
     work_order_path = db.Column(db.String(255), nullable=True)
     certificate_path = db.Column(db.String(255), nullable=True)
-    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    fumigation_sign_path = db.Column(db.String(255), nullable=True)
 
     # Many-to-Many relationships
     lots = db.relationship('Lot', secondary=fumigation_lot, backref=db.backref('fumigations', lazy='dynamic'))

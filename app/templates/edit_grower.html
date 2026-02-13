@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container">
-    <h2>Agregar Nuevo Productor</h2>
+    <h2>Editar Productor</h2>
     <form method="POST">
         {{ form.hidden_tag() }}
         <div class="form-group">{{ form.name.label }} {{ form.name(class="form-control", required=True) }}</div>
