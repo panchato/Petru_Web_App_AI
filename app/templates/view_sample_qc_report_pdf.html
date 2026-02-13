@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Reporte QC Muestra {{ report.id }}</title>
+    <style>
+        @page {
+            size: Letter;
+            margin: 0.5in;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 9px;
+            color: #111;
+        }
+        h1, h2, h3, h4 {
+            margin: 0 0 6px 0;
+        }
+        .section {
+            margin-bottom: 10px;
+        }
+        .grid {
+            display: table;
+            width: 100%;
+        }
+        .grid-row {
+            display: table-row;
+        }
+        .grid-cell {
+            display: table-cell;
+            vertical-align: top;
+            padding-right: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 3px 4px;
+        }
+        th {
+            background: #f2f2f2;
+            text-align: left;
+        }
+        .num {
+            text-align: right;
+        }
+        .img-row {
+            display: table;
+            width: 100%;
+        }
+        .img-cell {
+            display: table-cell;
+            width: 50%;
+            padding-right: 8px;
+        }
+        .img-cell img {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="section" style="text-align:center;">
+        <h2>Control de Calidad de Muestra</h2>
+    </div>
+
+    <div class="section">
+        <table>
+            <thead>
+                <tr>
+                    <th>Productor</th>
+                    <th>Muestra traída por</th>
+                    <th>Analista</th>
+                    <th>Fecha</th>
+                    <th class="num">Unidades</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ report.grower }}</td>
+                    <td>{{ report.brought_by }}</td>
+                    <td>{{ report.analyst }}</td>
+                    <td>{{ report.date.strftime('%d-%m-%Y') }}</td>
+                    <td class="num">{{ report.units }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section" style="text-align:center;">
+        <h4>Detalle de Cáscara</h4>
+    </div>
+    <div class="section grid">
+        <div class="grid-row">
+            <div class="grid-cell">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Calibre</th>
+                            <th class="num">Unidades</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>30/-</td><td class="num">{{ report.lessthan30 }}</td></tr>
+                        <tr><td>30/32</td><td class="num">{{ report.between3032 }}</td></tr>
+                        <tr><td>32/34</td><td class="num">{{ report.between3234 }}</td></tr>
+                        <tr><td>34/36</td><td class="num">{{ report.between3436 }}</td></tr>
+                        <tr><td>36/+</td><td class="num">{{ report.morethan36 }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="grid-cell">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Defecto Externo</th>
+                            <th class="num">Unidades</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Cáscara Rota</td><td class="num">{{ report.broken_walnut }}</td></tr>
+                        <tr><td>Casco Abierto</td><td class="num">{{ report.split_walnut }}</td></tr>
+                        <tr><td>Mancha Leve</td><td class="num">{{ report.light_stain }}</td></tr>
+                        <tr><td>Mancha Grave</td><td class="num">{{ report.serious_stain }}</td></tr>
+                        <tr><td>Pelón Adherido</td><td class="num">{{ report.adhered_hull }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="section" style="text-align:center;">
+        <h4>Detalle de Pulpa</h4>
+    </div>
+    <div class="section grid">
+        <div class="grid-row">
+            <div class="grid-cell">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th class="num">Peso</th>
+                            <th class="num">%</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Peso con Cáscara</td><td class="num">{{ "{:,.0f}".format(report.inshell_weight).replace(",", ".") }}</td><td class="num">100%</td></tr>
+                        <tr><td>Peso de Pulpa</td><td class="num">{{ "{:,.0f}".format(report.shelled_weight).replace(",", ".") }}</td><td class="num">{{ report.yieldpercentage | round(2) }}%</td></tr>
+                        <tr><td>Extra Light</td><td class="num">{{ "{:,.0f}".format(report.extra_light).replace(",", ".") }}</td><td class="num">{{ (report.extra_light / report.shelled_weight * 100) | round(2) if report.shelled_weight != 0 else '0.00' }}%</td></tr>
+                        <tr><td>Light</td><td class="num">{{ "{:,.0f}".format(report.light).replace(",", ".") }}</td><td class="num">{{ (report.light / report.shelled_weight * 100) | round(2) if report.shelled_weight != 0 else '0.00' }}%</td></tr>
+                        <tr><td>Light Amber</td><td class="num">{{ "{:,.0f}".format(report.light_amber).replace(",", ".") }}</td><td class="num">{{ (report.light_amber / report.shelled_weight * 100) | round(2) if report.shelled_weight != 0 else '0.00' }}%</td></tr>
+                        <tr><td>Amber</td><td class="num">{{ "{:,.0f}".format(report.amber).replace(",", ".") }}</td><td class="num">{{ (report.amber / report.shelled_weight * 100) | round(2) if report.shelled_weight != 0 else '0.00' }}%</td></tr>
+                        <tr><td>Amarilla</td><td class="num">{{ "{:,.0f}".format(report.yellow).replace(",", ".") }}</td><td class="num">{{ (report.yellow / report.shelled_weight * 100) | round(2) if report.shelled_weight != 0 else '0.00' }}%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="grid-cell">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Defecto Interno</th>
+                            <th class="num">Unidades</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Reseca</td><td class="num">{{ report.shrivel }}</td></tr>
+                        <tr><td>Vana</td><td class="num">{{ report.empty }}</td></tr>
+                        <tr><td>Daño de Insecto</td><td class="num">{{ report.insect_damage }}</td></tr>
+                        <tr><td>Hongo Inactivo</td><td class="num">{{ report.inactive_fungus }}</td></tr>
+                        <tr><td>Hongo Activo</td><td class="num">{{ report.active_fungus }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% if inshell_image_url or shelled_image_url %}
+    <div class="section" style="text-align:center;">
+        <h4>Fotos</h4>
+    </div>
+    <div class="section img-row">
+        {% if inshell_image_url %}
+        <div class="img-cell">
+            <img src="{{ inshell_image_url }}" alt="Inshell Image">
+        </div>
+        {% endif %}
+        {% if shelled_image_url %}
+        <div class="img-cell">
+            <img src="{{ shelled_image_url }}" alt="Shelled Image">
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</body>
+</html>

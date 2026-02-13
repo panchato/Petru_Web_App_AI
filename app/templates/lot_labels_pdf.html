@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Etiquetas Lote {{ '%03d' % lot.lot_number }}</title>
+    <style>
+        @page {
+            size: Letter;
+            margin: 0.2in;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 28px;
+            color: #111;
+        }
+        .label {
+            width: 100%;
+            height: 100%;
+            border: 3px solid #111;
+            padding: 18px;
+            box-sizing: border-box;
+            page-break-after: always;
+            page-break-inside: avoid;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+        }
+        .content {
+            width: 100%;
+        }
+        .qr {
+            width: 520px;
+            height: 520px;
+            margin-top: 8px;
+        }
+        .title {
+            font-weight: bold;
+            font-size: 72px;
+            margin-bottom: 18px;
+        }
+        .meta {
+            font-size: 38px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    {% for _ in labels %}
+    <div class="label">
+        <div class="content">
+            <div class="title">Lote Nº {{ '%03d' % lot.lot_number }}</div>
+            <div class="meta">Cliente: {% if clients %}{{ clients[0].name }}{% endif %}</div>
+            <div class="meta">Productor: {% if growers %}{{ growers[0].name }}{% endif %}</div>
+            <div class="meta">Guía Nº: {{ reception.waybill }}</div>
+            <div class="meta">Variedad: {{ lot.variety.name }}</div>
+            <div class="meta">Cant. Envases: {{ lot.packagings_quantity }}</div>
+        </div>
+        <img class="qr" src="{{ qr_data_uri }}" alt="QR">
+    </div>
+    {% endfor %}
+</body>
+</html>
