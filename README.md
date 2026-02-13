@@ -151,6 +151,13 @@ Windows note for WeasyPrint runtime dependencies:
 - QC: `/create_lot_qc`, `/create_sample_qc`, `/list_lot_qc_reports`, `/list_sample_qc_reports`, report detail and `/pdf`
 - Fumigation: `/create_fumigation`, `/list_fumigations`, `/start_fumigation/<id>`, `/complete_fumigation/<id>`
 
+## PR Coordination (Current Split)
+To collaborate safely on the current feature split:
+- PR #2 (`pr1-fumigation-core`) merges first into `master`.
+- PR #3 (`pr2-ui-refresh`) and PR #4 (`pr3-reporting-docs`) are stacked on PR #2.
+- After PR #2 is merged, rebase PR #3 and PR #4 onto `master` (or retarget base branch to `master`) before final merge.
+- Keep local-only files out of PRs (`app/instance/database.db`, `.claude/`, `PROJECT_NOTES.md`).
+
 ## For Future Contributors / AI Agents
 When changing behavior, update all of:
 - Model fields + migration logic
