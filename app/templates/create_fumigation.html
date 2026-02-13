@@ -1,88 +1,40 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="container">
 
-<script>
-    $(document).ready(function() {
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        var category = "{{ messages[0][0] }}";
-        var message = "{{ messages[0][1] }}";
-        $('.modal-body').text(message);
-        if (category === 'success') {
-            $('.modal-footer').html('<button type="button" class="btn btn-secondary" onclick="window.location.href=\'/\'">Close</button>');
-            $('#Modal').modal({backdrop: 'static', keyboard: false});
-        } else {
-            $('.modal-footer').html('<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>');
-        }
-        $('#Modal').modal('show');
-        {% endif %}
-        {% endwith %}
-    });
-</script>
+    <h2>Crear Fumigaci&oacute;n</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
 
-<h2>Crear Fumigación</h2>
-<form method="POST" enctype="multipart/form-data">
-    {{ form.hidden_tag() }}
-
-    <div class="form-group">
-        {{ form.work_order.label(class="form-label") }}
-        {{ form.work_order(class="form-control") }}
-        {% if form.work_order.errors %}
+        <div class="form-group">
+            {{ form.work_order.label(class="form-label") }}
+            {{ form.work_order(class="form-control", required=True) }}
+            {% if form.work_order.errors %}
             <div class="alert alert-danger">{{ form.work_order.errors[0] }}</div>
-        {% endif %}
-    </div>
-
-    <div class="form-group">
-        {{ form.start_date.label(class="form-label") }}
-        {{ form.start_date(class="form-control") }}
-        {% if form.start_date.errors %}
-            <div class="alert alert-danger">{{ form.start_date.errors[0] }}</div>
-        {% endif %}
-    </div>
-
-    <div class="form-group">
-        {{ form.start_time.label(class="form-label") }}
-        {{ form.start_time(class="form-control") }}
-        {% if form.start_time.errors %}
-            <div class="alert alert-danger">{{ form.start_time.errors[0] }}</div>
-        {% endif %}
-    </div>
-
-    <div class="form-group">
-        {{ form.work_order_doc.label(class="form-label") }}
-        {{ form.work_order_doc(class="form-control") }}
-        {% if form.work_order_doc.errors %}
-            <div class="alert alert-danger">{{ form.work_order_doc.errors[0] }}</div>
-        {% endif %}
-    </div>
-
-    <div class="form-group">
-        {{ form.lot_selection.label(class="form-label") }}
-        {{ form.lot_selection(class="form-control") }}
-        {% if form.lot_selection.errors %}
-            <div class="alert alert-danger">{{ form.lot_selection.errors[0] }}</div>
-        {% endif %}
-    </div>
-
-    <div>
-        {{ form.submit(class="btn btn-primary") }}
-    </div>
-</form>
-<!-- Error Modal -->
-<div class="modal fade" id="Modal" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="ModalLabel">Mensaje del Sistema</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-            <!-- Error message will be injected here -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-            </div>
+            {% endif %}
         </div>
-    </div>
+
+        <div class="form-group">
+            {{ form.lot_selection.label(class="form-label") }}
+            <div class="border rounded p-2" style="max-height: 200px; overflow-y: auto;">
+                {% for option in form.lot_selection %}
+                <div class="form-check">
+                    {{ option(class="form-check-input") }}
+                    {{ option.label(class="form-check-label") }}
+                </div>
+                {% endfor %}
+                {% if not form.lot_selection.choices %}
+                <span class="text-muted">No hay lotes disponibles para fumigar.</span>
+                {% endif %}
+            </div>
+            {% if form.lot_selection.errors %}
+            <div class="alert alert-danger mt-1">{{ form.lot_selection.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="form-actions">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('list_fumigations') }}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
 </div>
 {% endblock %}

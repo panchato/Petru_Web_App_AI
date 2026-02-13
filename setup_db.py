@@ -2,7 +2,7 @@ import logging
 import os
 from flask_migrate import init, migrate as migrate_function, upgrade
 from app import app, db, bcrypt
-from app.models import User, Role, Client, Grower, Variety, RawMaterialPackaging
+from app.models import User, Role, Area, Client, Grower, Variety, RawMaterialPackaging
 
 logging.basicConfig(level=logging.INFO)
 
@@ -41,6 +41,28 @@ def create_tables():
 def create_admin_user():
     """Create the default admin user and role."""
     with app.app_context():
+        # Ensure base roles exist
+        roles = [
+            ("Admin", "Administrador del Sistema"),
+            ("Contribuidor", "Puede crear y editar registros"),
+            ("Lector", "Puede visualizar registros"),
+            ("Dashboard", "Puede visualizar dashboard operacional"),
+        ]
+        for name, description in roles:
+            if Role.query.filter_by(name=name).first() is None:
+                db.session.add(Role(name=name, description=description))  # type: ignore
+        db.session.commit()
+
+        # Ensure base areas exist
+        areas = [
+            ("Materia Prima", "Gestión de recepciones, lotes y fumigaciones"),
+            ("Calidad", "Control de calidad de lotes y muestras"),
+        ]
+        for name, description in areas:
+            if Area.query.filter_by(name=name).first() is None:
+                db.session.add(Area(name=name, description=description))  # type: ignore
+        db.session.commit()
+
         admin_user = User.query.filter_by(email=ADMIN_EMAIL).first()
 
         if admin_user is None:
@@ -65,13 +87,10 @@ def create_admin_user():
         else:
             logging.info(f"Admin user '{ADMIN_EMAIL}' already exists.")
 
-        # Create Admin role if it doesn't exist
         admin_role = Role.query.filter_by(name='Admin').first()
         if admin_role is None:
-            admin_role = Role(name='Admin', description='Administrador del Sistema')  # type: ignore
-            db.session.add(admin_role)
-            db.session.commit()
-            logging.info("Admin role created.")
+            logging.error("Admin role not found; cannot assign to admin user.")
+            return
 
         # Assign role to admin user
         admin_user = User.query.filter_by(email=ADMIN_EMAIL).first()

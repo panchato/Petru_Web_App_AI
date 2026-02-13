@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, FloatField, IntegerField, PasswordField, SelectField, SelectMultipleField, DateField, TimeField, SubmitField, HiddenField, RadioField, BooleanField
 from wtforms.validators import DataRequired, InputRequired, ValidationError, Length, Email
+from wtforms.widgets import ListWidget, CheckboxInput
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 from app.models import User, Role, Area, Client, Grower, Variety, RawMaterialPackaging, Lot, LotQC
 
@@ -17,6 +18,13 @@ class AddUserForm(FlaskForm):
     phone_number = StringField('Celular', validators=[DataRequired(), Length(min=9, max=9)])
     password = PasswordField('Contraseña', validators=[DataRequired()])
     submit = SubmitField('Agregar Usuario')
+
+class EditUserForm(FlaskForm):
+    name = StringField('Nombre', validators=[DataRequired(), Length(min=2, max=64)])
+    last_name = StringField('Apellido', validators=[DataRequired(), Length(min=2, max=64)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    phone_number = StringField('Celular', validators=[DataRequired(), Length(min=9, max=9)])
+    submit = SubmitField('Guardar Cambios')
 
 class AddRoleForm(FlaskForm):
     name = StringField('Rol', validators=[DataRequired()])
@@ -35,8 +43,8 @@ class AssignRoleForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super(AssignRoleForm, self).__init__(*args, **kwargs)
-        self.user_id.choices = [(u.id, u.email) for u in User.query.order_by(User.email).all()]
-        self.role_id.choices = [(r.id, r.name) for r in Role.query.order_by(Role.name).all()]
+        self.user_id.choices = [(u.id, u.email) for u in User.query.filter_by(is_active=True).order_by(User.email).all()]
+        self.role_id.choices = [(r.id, r.name) for r in Role.query.filter_by(is_active=True).order_by(Role.name).all()]
 
 class AssignAreaForm(FlaskForm):
     user_id = SelectField('Usuario', coerce=int, validators=[DataRequired()])
@@ -45,8 +53,8 @@ class AssignAreaForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super(AssignAreaForm, self).__init__(*args, **kwargs)
-        self.user_id.choices = [(u.id, u.email) for u in User.query.order_by(User.email).all()]
-        self.area_id.choices = [(r.id, r.name) for r in Area.query.order_by(Area.name).all()]
+        self.user_id.choices = [(u.id, u.email) for u in User.query.filter_by(is_active=True).order_by(User.email).all()]
+        self.area_id.choices = [(r.id, r.name) for r in Area.query.filter_by(is_active=True).order_by(Area.name).all()]
 
 class AddClientForm(FlaskForm):
     name = StringField('Razón Social', validators=[DataRequired()])
@@ -86,8 +94,8 @@ class CreateRawMaterialReceptionForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super(CreateRawMaterialReceptionForm, self).__init__(*args, **kwargs)
-        self.grower_id.choices = [(g.id, g.name) for g in Grower.query.all()]
-        self.client_id.choices = [(c.id, c.name) for c in Client.query.all()]
+        self.grower_id.choices = [(g.id, g.name) for g in Grower.query.filter_by(is_active=True).all()]
+        self.client_id.choices = [(c.id, c.name) for c in Client.query.filter_by(is_active=True).all()]
 
 class CreateLotForm(FlaskForm):
     reception_id = HiddenField('Reception ID')
@@ -103,8 +111,8 @@ class CreateLotForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super(CreateLotForm, self).__init__(*args, **kwargs)
-        self.variety_id.choices = [(v.id, v.name) for v in Variety.query.all()]
-        self.rawmaterialpackaging_id.choices = [(p.id, p.name) for p in RawMaterialPackaging.query.all()]
+        self.variety_id.choices = [(v.id, v.name) for v in Variety.query.filter_by(is_active=True).all()]
+        self.rawmaterialpackaging_id.choices = [(p.id, p.name) for p in RawMaterialPackaging.query.filter_by(is_active=True).all()]
 
 class FullTruckWeightForm(FlaskForm):
     loaded_truck_weight = FloatField('Loaded Truck Weight', validators=[DataRequired()])
@@ -148,8 +156,7 @@ class LotQCForm(FlaskForm):
         super(LotQCForm, self).__init__(*args, **kwargs)
         available_lots = (
             Lot.query
-            .outerjoin(LotQC, Lot.id == LotQC.lot_id)
-            .filter(LotQC.id.is_(None))
+            .filter_by(has_qc=False)
             .order_by(Lot.lot_number.asc())
             .all()
         )
@@ -199,14 +206,24 @@ class SampleQCForm(FlaskForm):
         
 class FumigationForm(FlaskForm):
     work_order = StringField('Orden de Trabajo', validators=[DataRequired()])
-    start_date = DateField('Fecha de Inicio', validators=[DataRequired()], format='%d-%m-%Y')
-    start_time = TimeField('Hora de Inicio', validators=[DataRequired()], format='%H:%M')
-    work_order_doc = FileField('Orden de Trabajo', validators=[FileRequired(), FileAllowed(['pdf'], 'Sólo PDF!')])
-    lot_selection = SelectMultipleField('Lotes', coerce=int, choices=[])
+    lot_selection = SelectMultipleField('Lotes', coerce=int, choices=[], widget=ListWidget(prefix_label=False), option_widget=CheckboxInput())
     submit = SubmitField('Crear Fumigación')
 
     def __init__(self, *args, **kwargs):
         super(FumigationForm, self).__init__(*args, **kwargs)
-        # Filter lots where fumigation_status is '2'
+        # Filter lots where fumigation_status is '1' (not yet fumigated)
         sorted_lots = Lot.query.filter_by(fumigation_status='1').order_by(Lot.lot_number).all()
         self.lot_selection.choices = [(lot.id, f'Lote Nº {lot.lot_number}') for lot in sorted_lots]
+
+class StartFumigationForm(FlaskForm):
+    real_start_date = DateField('Fecha de Inicio', validators=[DataRequired()], format='%Y-%m-%d')
+    real_start_time = TimeField('Hora de Inicio', validators=[DataRequired()], format='%H:%M')
+    work_order_doc = FileField('Orden de Trabajo (PDF)', validators=[FileAllowed(['pdf'], 'Sólo PDF!')])
+    fumigation_sign = FileField('Foto del Letrero de Fumigación', validators=[FileAllowed(['jpg', 'png', 'jpeg'], 'Imágenes Solamente!')])
+    submit = SubmitField('Iniciar Fumigación')
+
+class CompleteFumigationForm(FlaskForm):
+    real_end_date = DateField('Fecha de Finalización', validators=[DataRequired()], format='%Y-%m-%d')
+    real_end_time = TimeField('Hora de Finalización', validators=[DataRequired()], format='%H:%M')
+    certificate_doc = FileField('Certificado de Fumigación', validators=[FileAllowed(['pdf'], 'Sólo PDF!')])
+    submit = SubmitField('Completar Fumigación')
