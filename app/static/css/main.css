@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+
+:root {
+    --primary-blue: #007bff;
+    --dark-grey: #343a40;
+    --light-grey: #f8f9fa;
+    --transition-speed: 0.3s;
+}
+
+body {
+    font-family: 'Quicksand', sans-serif;
+    color: var(--dark-grey);
+    padding-top: 80px;
+    /* Space for the sticky header */
+}
+
+/* Navbar Styles */
+.navbar {
+    padding: 15px 0;
+    background: #fff !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: all var(--transition-speed) ease;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 24px;
+    color: var(--primary-blue) !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.nav-link {
+    font-weight: 500;
+    color: var(--dark-grey) !important;
+    padding: 10px 15px !important;
+    transition: color var(--transition-speed);
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: var(--primary-blue) !important;
+}
+
+/* Dropdown Submenu Fixes for Mobile/Desktop */
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 10px 0;
+}
+
+.dropdown-item {
+    font-weight: 500;
+    padding: 8px 20px;
+}
+
+.dropdown-item:hover {
+    background-color: var(--light-grey);
+    color: var(--primary-blue);
+}
+
+/* Hover Behavior for Desktop */
+@media (min-width: 992px) {
+    .nav-item.dropdown:hover>.dropdown-menu {
+        display: block;
+        margin-top: 0;
+        /* Remove gap that could break hover chain */
+    }
+
+    .dropdown-submenu:hover>.dropdown-menu {
+        display: block;
+    }
+}
+
+/* Sticky Header Refinement on Scroll (Optional JS can toggle this class) */
+.navbar.scrolled {
+    padding: 10px 0;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 991.98px) {
+    body {
+        padding-top: 70px;
+    }
+
+    .navbar-collapse {
+        background: #fff;
+        margin-top: 15px;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .dropdown-submenu>.dropdown-menu {
+        position: static;
+        margin-left: 20px;
+        box-shadow: none;
+        display: none;
+    }
+
+    .dropdown-submenu.show>.dropdown-menu {
+        display: block;
+    }
+}
+
+/* UI Elements Enhancement */
+.alert {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.btn-primary {
+    background-color: var(--primary-blue);
+    border: none;
+    border-radius: 6px;
+    padding: 8px 20px;
+    font-weight: 600;
+    transition: transform 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    background-color: #0056b3;
+}

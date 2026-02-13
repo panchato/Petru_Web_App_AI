@@ -3,6 +3,9 @@
 {% block content %}
     <div class="container text-center">
         <h2>Control de Calidad de Muestra</h2>
+        <a href="{{ url_for('view_sample_qc_report_pdf', report_id=report.id) }}" class="btn btn-outline-secondary btn-sm mt-2">
+            Descargar PDF
+        </a>
     </div>
     <br>
 
@@ -36,16 +39,14 @@
               <tr>
                 <th scope="col">Analista</th>
                 <th scope="col">Fecha</th>
-                <th scope="col">Hora</th>
-                <th scope="col">Unidades</th>
+                <th scope="col" class="text-end">Unidades</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td>{{ report.analyst }}</td>
-                <td>{{ report.date.strftime('%Y-%m-%d') }}</td>
-                <td>{{ report.time.strftime('%H:%M') }}</td>
-                <td>{{ report.units }}</td>
+                <td>{{ report.date.strftime('%d-%m-%Y') }}</td>
+                <td class="text-end">{{ report.units }}</td>
               </tr>
             </tbody>
         </table>
@@ -65,29 +66,29 @@
                     <thead>
                         <tr>
                             <th scope="col">Calibre</th>
-                            <th scope="col">Unidades</th>
+                            <th scope="col" class="text-end">Unidades</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td>30/-</td>
-                            <td>{{ report.lessthan30 }}</td>
+                            <td class="text-end">{{ report.lessthan30 }}</td>
                         </tr>
                         <tr>
                             <td>30/32</td>
-                            <td>{{ report.between3032 }}</td>
+                            <td class="text-end">{{ report.between3032 }}</td>
                         </tr>
                         <tr>
                             <td>32/34</td>
-                            <td>{{ report.between3234 }}</td>
+                            <td class="text-end">{{ report.between3234 }}</td>
                         </tr>
                         <tr>
                             <td>34/36</td>
-                            <td>{{ report.between3436 }}</td>
+                            <td class="text-end">{{ report.between3436 }}</td>
                         </tr>
                         <tr>
                             <td>36/+</td>
-                            <td>{{ report.morethan36 }}</td>
+                            <td class="text-end">{{ report.morethan36 }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -97,29 +98,29 @@
                     <thead>
                         <tr>
                             <th scope="col">Defecto Externo</th>
-                            <th scope="col">Unidades</th>
+                            <th scope="col" class="text-end">Unidades</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td>Cáscara Rota</td>
-                            <td>{{ report.broken_walnut }}</td>
+                            <td class="text-end">{{ report.broken_walnut }}</td>
                         </tr>
                         <tr>
                             <td>Casco Abierto</td>
-                            <td>{{ report.split_walnut }}</td>
+                            <td class="text-end">{{ report.split_walnut }}</td>
                         </tr>
                         <tr>
                             <td>Mancha Leve</td>
-                            <td>{{ report.light_stain }}</td>
+                            <td class="text-end">{{ report.light_stain }}</td>
                         </tr>
                         <tr>
                             <td>Mancha Grave</td>
-                            <td>{{ report.serious_stain }}</td>
+                            <td class="text-end">{{ report.serious_stain }}</td>
                         </tr>
                         <tr>
                             <td>Pelón Adherido</td>
-                            <td>{{ report.adhered_hull }}</td>
+                            <td class="text-end">{{ report.adhered_hull }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -141,45 +142,45 @@
                     <thead>
                         <tr>
                             <th scope="col">Item</th>
-                            <th scope="col">Peso (grs.)</th>
-                            <th scope="col">Porcentaje</th>
+                            <th scope="col" class="text-end">Peso (grs.)</th>
+                            <th scope="col" class="text-end">Porcentaje</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td>Peso con Cáscara</td>
-                            <td>{{ report.inshell_weight }}</td>
-                            <td>100.00%</td>
+                            <td class="text-end">{{ "{:,.0f}".format(report.inshell_weight).replace(",", ".") }}</td>
+                            <td class="text-end">100%</td>
                         </tr>
                         <tr>
                             <td>Peso de Pulpa</td>
-                            <td>{{ report.shelled_weight }}</td>
-                            <td>{{ report.yieldpercentage | round(2) }}%</td>
+                            <td class="text-end">{{ "{:,.0f}".format(report.shelled_weight).replace(",", ".") }}</td>
+                            <td class="text-end">{{ report.yieldpercentage | round(2) }}%</td>
                         </tr>
                         <tr>
                             <td>Extra Light</td>
-                            <td>{{ report.extra_light }}</td>
-                            <td>{{ (report.extra_light / report.shelled_weight * 100) | round(2) if report.shelled_weight != 0 else '0.00' }}%</td>
+                            <td class="text-end">{{ "{:,.0f}".format(report.extra_light).replace(",", ".") }}</td>
+                            <td class="text-end">{{ (report.extra_light / report.shelled_weight * 100) | round(2) if report.shelled_weight != 0 else '0.00' }}%</td>
                         </tr>
                         <tr>
                             <td>Light</td>
-                            <td>{{ report.light }}</td>
-                            <td>{{ (report.light / report.shelled_weight * 100) | round(2) if report.shelled_weight != 0 else '0.00' }}%</td>
+                            <td class="text-end">{{ "{:,.0f}".format(report.light).replace(",", ".") }}</td>
+                            <td class="text-end">{{ (report.light / report.shelled_weight * 100) | round(2) if report.shelled_weight != 0 else '0.00' }}%</td>
                         </tr>
                         <tr>
                             <td>Light Amber</td>
-                            <td>{{ report.light_amber }}</td>
-                            <td>{{ (report.light_amber / report.shelled_weight * 100) | round(2) if report.shelled_weight != 0 else '0.00' }}%</td>
+                            <td class="text-end">{{ "{:,.0f}".format(report.light_amber).replace(",", ".") }}</td>
+                            <td class="text-end">{{ (report.light_amber / report.shelled_weight * 100) | round(2) if report.shelled_weight != 0 else '0.00' }}%</td>
                         </tr>
                         <tr>
                             <td>Amber</td>
-                            <td>{{ report.amber }}</td>
-                            <td>{{ (report.amber / report.shelled_weight * 100) | round(2) if report.shelled_weight != 0 else '0.00' }}%</td>
+                            <td class="text-end">{{ "{:,.0f}".format(report.amber).replace(",", ".") }}</td>
+                            <td class="text-end">{{ (report.amber / report.shelled_weight * 100) | round(2) if report.shelled_weight != 0 else '0.00' }}%</td>
                         </tr>
                         <tr>
                             <td>Amarilla</td>
-                            <td>{{ report.yellow }}</td>
-                            <td>{{ (report.yellow / report.shelled_weight * 100) | round(2) if report.shelled_weight != 0 else '0.00' }}%</td>
+                            <td class="text-end">{{ "{:,.0f}".format(report.yellow).replace(",", ".") }}</td>
+                            <td class="text-end">{{ (report.yellow / report.shelled_weight * 100) | round(2) if report.shelled_weight != 0 else '0.00' }}%</td>
                         </tr>
                     </tbody>
                 </table>
@@ -189,29 +190,29 @@
                     <thead>
                         <tr>
                             <th scope="col">Defecto Interno</th>
-                            <th scope="col">Unidades</th>
+                            <th scope="col" class="text-end">Unidades</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td>Reseca</td>
-                            <td>{{ report.shrivel }}</td>
+                            <td class="text-end">{{ report.shrivel }}</td>
                         </tr>
                         <tr>
                             <td>Vana</td>
-                            <td>{{ report.empty }}</td>
+                            <td class="text-end">{{ report.empty }}</td>
                         </tr>
                         <tr>
                             <td>Daño de Insecto</td>
-                            <td>{{ report.insect_damage }}</td>
+                            <td class="text-end">{{ report.insect_damage }}</td>
                         </tr>
                         <tr>
                             <td>Hongo Inactivo</td>
-                            <td>{{ report.inactive_fungus }}</td>
+                            <td class="text-end">{{ report.inactive_fungus }}</td>
                         </tr>
                         <tr>
                             <td>Hongo Activo</td>
-                            <td>{{ report.active_fungus }}</td>
+                            <td class="text-end">{{ report.active_fungus }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -221,16 +222,21 @@
     <br>
     <br>
 
-    {% if report.inshell_image_path %}
-    <div class="container">
-        <img src="{{ url_for('static', filename=report.inshell_image_path) }}" alt="Inshell Image" style="max-width: 100%; height: auto;">
-    </div>
-    {% endif %}
-    {% if report.shelled_image_path %}
-    <div class="container">
-        <img src="{{ url_for('static', filename=report.shelled_image_path) }}" alt="Shelled Image" style="max-width: 100%; height: auto;">
+    {% if report.inshell_image_path or report.shelled_image_path %}
+    <div class="container text-center">
+        <div class="row justify-content-center g-3">
+            {% if report.inshell_image_path %}
+            <div class="col-12 col-md-6">
+                <img src="{{ url_for('static', filename=report.inshell_image_path.replace('\\', '/')) }}" alt="Inshell Image" class="img-fluid">
+            </div>
+            {% endif %}
+            {% if report.shelled_image_path %}
+            <div class="col-12 col-md-6">
+                <img src="{{ url_for('static', filename=report.shelled_image_path.replace('\\', '/')) }}" alt="Shelled Image" class="img-fluid">
+            </div>
+            {% endif %}
+        </div>
     </div>
     {% endif %}
 
-</div>
 {% endblock %}
