@@ -1,10 +1,38 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Agregar Nuevo Envase de Materia Prima</h2>
-<form method="POST">
-    {{ form.hidden_tag() }}
-    <div class="form-group">{{ form.name.label }} {{ form.name(class="form-control") }}</div>
-    <div class="form-group">{{ form.tare.label }} {{ form.tare(class="form-control") }}</div><br>
-    <div>{{ form.submit(class="btn btn-primary") }}</div>
-</form>
+<div class="page-header">
+    <div>
+        <h2>Agregar nuevo envase de materia prima</h2>
+        <p class="subtle">Define nombre y tara del envase.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('list_raw_material_packagings') }}" class="btn btn-outline-secondary">Volver al listado</a>
+    </div>
+</div>
+
+<div class="form-section">
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="row g-3">
+            <div class="col-md-6">
+                {{ form.name.label(class="form-label required") }}
+                {{ form.name(class="form-control", aria_describedby="rmp_name_error") }}
+                {% if form.name.errors %}
+                <div id="rmp_name_error" class="field-error" role="alert">{{ form.name.errors[0] }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                {{ form.tare.label(class="form-label required") }}
+                {{ form.tare(class="form-control", aria_describedby="rmp_tare_error") }}
+                {% if form.tare.errors %}
+                <div id="rmp_tare_error" class="field-error" role="alert">{{ form.tare.errors[0] }}</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="page-actions mt-4">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('list_raw_material_packagings') }}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
 {% endblock %}

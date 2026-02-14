@@ -1,16 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
 <script>
-    $(document).ready(function() {
-      {% with messages = get_flashed_messages() %}
-        {% if messages %}
-          var errorMessage = "{{ messages[0] }}";
-          $('.modal-body').text(errorMessage);
-          $('#errorModal').modal('show');
-        {% endif %}
-      {% endwith %}
-    });
-
     function updateShelledWeight() {
         const extraLight = parseFloat($('#extra_light').val()) || 0;
         const light = parseFloat($('#light').val()) || 0;
@@ -63,186 +53,223 @@
         updateUnits();
         formatYieldPercentage();
     });
-    </script>
+</script>
 
-<div class="container">
-    <h2>Control de Calidad de Muestras</h2>
-    <form method="POST" enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
-
-        <div class="form-group">
-            {{ form.grower.label(class="form-label") }}
-            {{ form.grower(class="form-control") }}
-        </div>
-
-        <div class="form-group">
-            {{ form.brought_by.label(class="form-label") }}
-            {{ form.brought_by(class="form-control") }}
-        </div>
-
-        <div class="form-group">
-            {{ form.analyst.label(class="form-label") }}
-            {{ form.analyst(class="form-control") }}
-        </div>
-
-        <div class="form-row">
-            <div class="form-group col-md-6">
-                {{ form.date.label(class="form-label") }}
-                {{ form.date(class="form-control") }}
-            </div>
-            <div class="form-group col-md-6">
-                {{ form.time.label(class="form-label") }}
-                {{ form.time(class="form-control") }}
-            </div>
-        </div><br>
-        <h3>Peso y Rendimiento</h3>
-        <div class="form-group">
-            {{ form.units.label(class="form-label") }}
-            {{ form.units(class="form-control bg-light", readonly=true, value=form.units.data or 0) }}
-        </div>
-
-        <div class="form-group">
-            {{ form.inshell_weight.label(class="form-label") }}
-            {{ form.inshell_weight(class="form-control") }}
-        </div>
-
-        <div class="form-group">
-            {{ form.shelled_weight.label(class="form-label") }}
-            {{ form.shelled_weight(class="form-control bg-light", readonly=true) }}
-        </div>
-
-        <div class="form-group">
-            {{ form.yieldpercentage.label(class="form-label") }}
-            {{ form.yieldpercentage(class="form-control bg-light", readonly=true) }}
-        </div><br>
-        <h3>Colores</h3>
-        <div class="form-group">
-            {{ form.extra_light.label(class="form-label") }}
-            {{ form.extra_light(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.light.label(class="form-label") }}
-            {{ form.light(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.light_amber.label(class="form-label") }}
-            {{ form.light_amber(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.amber.label(class="form-label") }}
-            {{ form.amber(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.yellow.label(class="form-label") }}
-            {{ form.yellow(class="form-control") }}
-        </div><br>
-        <h3>Calibres</h3>
-        <div class="form-group">
-            {{ form.lessthan30.label(class="form-label") }}
-            {{ form.lessthan30(class="form-control") }}
-        </div>
-
-        <div class="form-group">
-            {{ form.between3032.label(class="form-label") }}
-            {{ form.between3032(class="form-control") }}
-        </div>
-
-        <div class="form-group">
-            {{ form.between3234.label(class="form-label") }}
-            {{ form.between3234(class="form-control") }}
-        </div>
-
-        <div class="form-group">
-            {{ form.between3436.label(class="form-label") }}
-            {{ form.between3436(class="form-control") }}
-        </div>
-
-        <div class="form-group">
-            {{ form.morethan36.label(class="form-label") }}
-            {{ form.morethan36(class="form-control") }}
-        </div><br>
-        <h3>Daños Externos</h3>
-        <div class="form-group">
-            {{ form.broken_walnut.label(class="form-label") }}
-            {{ form.broken_walnut(class="form-control") }}
-        </div>
-
-        <div class="form-group">
-            {{ form.split_walnut.label(class="form-label") }}
-            {{ form.split_walnut(class="form-control") }}
-        </div>
-
-        <div class="form-group">
-            {{ form.light_stain.label(class="form-label") }}
-            {{ form.light_stain(class="form-control") }}
-        </div>
-
-        <div class="form-group">
-            {{ form.serious_stain.label(class="form-label") }}
-            {{ form.serious_stain(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.adhered_hull.label(class="form-label") }}
-            {{ form.adhered_hull(class="form-control") }}
-        </div><br>
-        <h3>Daños Internos</h3>
-        <div class="form-group">
-            {{ form.shrivel.label(class="form-label") }}
-            {{ form.shrivel(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.empty.label(class="form-label") }}
-            {{ form.empty(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.insect_damage.label(class="form-label") }}
-            {{ form.insect_damage(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.inactive_fungus.label(class="form-label") }}
-            {{ form.inactive_fungus(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.active_fungus.label(class="form-label") }}
-            {{ form.active_fungus(class="form-control") }}
-        </div><br>
-        <h3>Imágenes de Calidad</h3>
-        <div class="form-group">
-            {{ form.inshell_image.label(class="form-label") }}
-            {{ form.inshell_image(class="form-control-file") }}
-            {% if form.inshell_image.errors %}
-                <div class="alert alert-danger">
-                    {{ form.inshell_image.errors[0] }}
-                </div>
-                {% endif %}
-        </div>
-        <div class="form-group">
-            {{ form.shelled_image.label(class="form-label") }}
-            {{ form.shelled_image(class="form-control-file") }}
-            {% if form.shelled_image.errors %}
-                <div class="alert alert-danger">
-                    {{ form.shelled_image.errors[0] }}
-                </div>
-            {% endif %}
-        </div><br>
-        <div>{{ form.submit(class="btn btn-primary") }}</div>
-    </form>
+<div class="page-header">
+    <div>
+        <h2>Control de calidad de muestras</h2>
+        <p class="subtle">Registra los datos de la muestra y valida los totales calculados.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('list_sample_qc_reports') }}" class="btn btn-outline-secondary">Volver al listado</a>
+    </div>
 </div>
-<!-- Error Modal -->
-<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="errorModalLabel">Error</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+<form method="POST" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+
+    <div class="form-section">
+        <h3>Datos generales</h3>
+        <div class="row g-3">
+            <div class="col-md-6">
+                {{ form.grower.label(class="form-label required") }}
+                {{ form.grower(class="form-control", aria_describedby="grower_help grower_error") }}
+                <div id="grower_help" class="form-help">Productor que entrega la muestra.</div>
+                {% if form.grower.errors %}
+                <div id="grower_error" class="field-error" role="alert">{{ form.grower.errors[0] }}</div>
+                {% endif %}
             </div>
-            <div class="modal-body">
-            <!-- Error message will be injected here -->
+            <div class="col-md-6">
+                {{ form.brought_by.label(class="form-label required") }}
+                {{ form.brought_by(class="form-control", aria_describedby="brought_help brought_error") }}
+                <div id="brought_help" class="form-help">Persona que entrega la muestra.</div>
+                {% if form.brought_by.errors %}
+                <div id="brought_error" class="field-error" role="alert">{{ form.brought_by.errors[0] }}</div>
+                {% endif %}
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <div class="col-md-6">
+                {{ form.analyst.label(class="form-label required") }}
+                {{ form.analyst(class="form-control", aria_describedby="analyst_help analyst_error") }}
+                <div id="analyst_help" class="form-help">Nombre del analista responsable.</div>
+                {% if form.analyst.errors %}
+                <div id="analyst_error" class="field-error" role="alert">{{ form.analyst.errors[0] }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                {{ form.date.label(class="form-label required") }}
+                {{ form.date(class="form-control", aria_describedby="date_help date_error") }}
+                <div id="date_help" class="form-help">Fecha del control.</div>
+                {% if form.date.errors %}
+                <div id="date_error" class="field-error" role="alert">{{ form.date.errors[0] }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                {{ form.time.label(class="form-label required") }}
+                {{ form.time(class="form-control", aria_describedby="time_help time_error") }}
+                <div id="time_help" class="form-help">Hora del control.</div>
+                {% if form.time.errors %}
+                <div id="time_error" class="field-error" role="alert">{{ form.time.errors[0] }}</div>
+                {% endif %}
             </div>
         </div>
     </div>
-</div>
+
+    <div class="form-section">
+        <h3>Peso y rendimiento</h3>
+        <div class="row g-3">
+            <div class="col-md-6">
+                {{ form.units.label(class="form-label") }}
+                {{ form.units(class="form-control bg-light", readonly=true, value=form.units.data or 0, aria_describedby="units_help") }}
+                <div id="units_help" class="form-help">Debe sumar 100 unidades.</div>
+            </div>
+            <div class="col-md-6">
+                {{ form.inshell_weight.label(class="form-label required") }}
+                {{ form.inshell_weight(class="form-control", aria_describedby="inshell_help inshell_error") }}
+                <div id="inshell_help" class="form-help">Peso en c&aacute;scara (kg).</div>
+                {% if form.inshell_weight.errors %}
+                <div id="inshell_error" class="field-error" role="alert">{{ form.inshell_weight.errors[0] }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                {{ form.shelled_weight.label(class="form-label") }}
+                {{ form.shelled_weight(class="form-control bg-light", readonly=true, aria_describedby="shelled_help") }}
+                <div id="shelled_help" class="form-help">Se calcula autom&aacute;ticamente.</div>
+            </div>
+            <div class="col-md-6">
+                {{ form.yieldpercentage.label(class="form-label") }}
+                {{ form.yieldpercentage(class="form-control bg-light", readonly=true, aria_describedby="yield_help") }}
+                <div id="yield_help" class="form-help">Porcentaje de rendimiento calculado.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3>Colores</h3>
+        <div class="row g-3">
+            <div class="col-md-4">
+                {{ form.extra_light.label(class="form-label") }}
+                {{ form.extra_light(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.light.label(class="form-label") }}
+                {{ form.light(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.light_amber.label(class="form-label") }}
+                {{ form.light_amber(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.amber.label(class="form-label") }}
+                {{ form.amber(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.yellow.label(class="form-label") }}
+                {{ form.yellow(class="form-control") }}
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3>Calibres</h3>
+        <div class="row g-3">
+            <div class="col-md-4">
+                {{ form.lessthan30.label(class="form-label") }}
+                {{ form.lessthan30(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.between3032.label(class="form-label") }}
+                {{ form.between3032(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.between3234.label(class="form-label") }}
+                {{ form.between3234(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.between3436.label(class="form-label") }}
+                {{ form.between3436(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.morethan36.label(class="form-label") }}
+                {{ form.morethan36(class="form-control") }}
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3>Da&ntilde;os externos</h3>
+        <div class="row g-3">
+            <div class="col-md-4">
+                {{ form.broken_walnut.label(class="form-label") }}
+                {{ form.broken_walnut(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.split_walnut.label(class="form-label") }}
+                {{ form.split_walnut(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.light_stain.label(class="form-label") }}
+                {{ form.light_stain(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.serious_stain.label(class="form-label") }}
+                {{ form.serious_stain(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.adhered_hull.label(class="form-label") }}
+                {{ form.adhered_hull(class="form-control") }}
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3>Da&ntilde;os internos</h3>
+        <div class="row g-3">
+            <div class="col-md-4">
+                {{ form.shrivel.label(class="form-label") }}
+                {{ form.shrivel(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.empty.label(class="form-label") }}
+                {{ form.empty(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.insect_damage.label(class="form-label") }}
+                {{ form.insect_damage(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.inactive_fungus.label(class="form-label") }}
+                {{ form.inactive_fungus(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.active_fungus.label(class="form-label") }}
+                {{ form.active_fungus(class="form-control") }}
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3>Im&aacute;genes de calidad</h3>
+        <div class="row g-3">
+            <div class="col-md-6">
+                {{ form.inshell_image.label(class="form-label") }}
+                {{ form.inshell_image(class="form-control-file") }}
+                {% if form.inshell_image.errors %}
+                <div class="field-error" role="alert">{{ form.inshell_image.errors[0] }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                {{ form.shelled_image.label(class="form-label") }}
+                {{ form.shelled_image(class="form-control-file") }}
+                {% if form.shelled_image.errors %}
+                <div class="field-error" role="alert">{{ form.shelled_image.errors[0] }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="page-actions">
+        {{ form.submit(class="btn btn-primary") }}
+        <a href="{{ url_for('list_sample_qc_reports') }}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+</form>
 {% endblock %}

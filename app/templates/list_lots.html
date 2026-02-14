@@ -1,53 +1,187 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Listado de Lotes</h2>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Nº Lote</th>
-            <th>Cliente</th>
-            <th>Productor</th>
-            <th>Variedad</th>
-            <th>Peso Neto</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for lot in lots %}
-        <tr>
-            <td>{{ '%03d' % lot.lot_number }}</td>
-            <td>
-                {% if lot.raw_material_reception.clients %}
-                    {% for client in lot.raw_material_reception.clients %}
-                        {{ client.name }}{% if not loop.last %}, {% endif %}
-                    {% endfor %}
-                {% else %}
-                    N/A
-                {% endif %}
-            </td>
-            <td>
-                {% if lot.raw_material_reception.growers %}
-                    {% for grower in lot.raw_material_reception.growers %}
-                        {{ grower.name }}{% if not loop.last %}, {% endif %}
-                    {% endfor %}
-                {% else %}
-                    N/A
-                {% endif %}
-            </td>
-            <td>{{ lot.variety.name }}</td>
-            <td>
-                {% if lot.net_weight == 0 %}
-                <a href="{{ url_for('register_full_truck_weight', lot_id=lot.id) }}">Registrar Peso</a>
-                {% else %}
-                {{ lot.net_weight }}
-                {% endif %}
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="5">No se econtraron lotes en la base de datos.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="page-header">
+    <div>
+        <h2>Listado de lotes</h2>
+        <p class="subtle">Consulta estado, peso y documentos asociados.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('create_raw_material_reception') }}" class="btn btn-primary">Crear recepci&oacute;n</a>
+        <a href="{{ url_for('list_rmrs') }}" class="btn btn-outline-secondary">Ver recepciones</a>
+    </div>
+</div>
+
+{% if labels_url %}
+<div class="alert alert-success d-flex flex-wrap justify-content-between align-items-center">
+    <div>Etiquetas generadas correctamente.</div>
+    <div class="page-actions">
+        <a href="{{ labels_url }}" target="_blank" class="btn btn-primary btn-sm">Descargar etiquetas</a>
+    </div>
+</div>
+{% endif %}
+
+<form class="filters" id="lotFilters" aria-label="Filtros r&aacute;pidos de lotes">
+    <div>
+        <label class="form-label">Estado fumigaci&oacute;n</label>
+        <select class="form-select" id="statusFilter">
+            <option value="">Todos</option>
+            <option value="disponible">Disponible</option>
+            <option value="asignada">Asignada</option>
+            <option value="en_fumigacion">En fumigaci&oacute;n</option>
+            <option value="finalizada">Finalizada</option>
+        </select>
+    </div>
+    <div>
+        <label class="form-label">Cliente</label>
+        <input type="text" class="form-control" id="clientFilter" placeholder="Buscar cliente">
+    </div>
+    <div>
+        <label class="form-label">Productor</label>
+        <input type="text" class="form-control" id="growerFilter" placeholder="Buscar productor">
+    </div>
+    <div>
+        <label class="form-label">Desde</label>
+        <input type="date" class="form-control" id="dateFrom">
+    </div>
+    <div>
+        <label class="form-label">Hasta</label>
+        <input type="date" class="form-control" id="dateTo">
+    </div>
+    <div>
+        <button type="button" class="btn btn-outline-secondary" id="clearFilters">Limpiar</button>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-striped" id="lotsTable">
+        <thead>
+            <tr>
+                <th>N&ordm; Lote</th>
+                <th>Cliente</th>
+                <th>Productor</th>
+                <th>Variedad</th>
+                <th>Estado fumigaci&oacute;n</th>
+                <th>Peso neto</th>
+                <th class="actions">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lot in lots %}
+            {% set client_names = [] %}
+            {% for client in lot.raw_material_reception.clients %}
+                {% set _ = client_names.append(client.name) %}
+            {% endfor %}
+            {% set grower_names = [] %}
+            {% for grower in lot.raw_material_reception.growers %}
+                {% set _ = grower_names.append(grower.name) %}
+            {% endfor %}
+            {% if lot.fumigation_status == '1' %}
+                {% set status_key = 'disponible' %}
+                {% set status_label = 'Disponible' %}
+            {% elif lot.fumigation_status == '2' %}
+                {% set status_key = 'asignada' %}
+                {% set status_label = 'Asignada' %}
+            {% elif lot.fumigation_status == '3' %}
+                {% set status_key = 'en_fumigacion' %}
+                {% set status_label = 'En fumigaci&oacute;n' %}
+            {% elif lot.fumigation_status == '4' %}
+                {% set status_key = 'finalizada' %}
+                {% set status_label = 'Finalizada' %}
+            {% else %}
+                {% set status_key = 'desconocida' %}
+                {% set status_label = 'Desconocida' %}
+            {% endif %}
+            <tr data-status="{{ status_key }}"
+                data-client="{{ client_names|join(', ') }}"
+                data-grower="{{ grower_names|join(', ') }}"
+                data-date="{{ lot.raw_material_reception.date.isoformat() if lot.raw_material_reception.date else '' }}">
+                <td>{{ '%03d' % lot.lot_number }}</td>
+                <td>{{ client_names|join(', ') if client_names else 'N/A' }}</td>
+                <td>{{ grower_names|join(', ') if grower_names else 'N/A' }}</td>
+                <td>{{ lot.variety.name }}</td>
+                <td>
+                    <span class="status-badge {% if status_key == 'disponible' %}status-available{% elif status_key == 'asignada' %}status-assigned{% elif status_key == 'en_fumigacion' %}status-active{% elif status_key == 'finalizada' %}status-done{% else %}status-unknown{% endif %}">
+                        {{ status_label }}
+                    </span>
+                </td>
+                <td>
+                    {% if lot.net_weight == 0 %}
+                    <span class="status-badge status-unknown">Pendiente</span>
+                    {% else %}
+                    {{ lot.net_weight }}
+                    {% endif %}
+                </td>
+                <td class="actions">
+                    {% if lot.net_weight == 0 %}
+                    <a href="{{ url_for('register_full_truck_weight', lot_id=lot.id) }}" class="btn btn-sm btn-primary">Registrar peso</a>
+                    {% endif %}
+                    <a href="{{ url_for('lot_labels_pdf', lot_id=lot.id) }}" class="btn btn-sm btn-outline-secondary" target="_blank">Etiquetas</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7">
+                    <div class="empty-state">
+                        <div>No se encontraron lotes en la base de datos.</div>
+                        <a href="{{ url_for('create_raw_material_reception') }}" class="btn btn-primary btn-sm">Crear recepci&oacute;n</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    (function() {
+        const statusFilter = document.getElementById('statusFilter');
+        const clientFilter = document.getElementById('clientFilter');
+        const growerFilter = document.getElementById('growerFilter');
+        const dateFrom = document.getElementById('dateFrom');
+        const dateTo = document.getElementById('dateTo');
+        const clearFilters = document.getElementById('clearFilters');
+        const rows = Array.from(document.querySelectorAll('#lotsTable tbody tr'));
+
+        function normalize(value) {
+            return (value || '').toLowerCase();
+        }
+
+        function applyFilters() {
+            const status = statusFilter.value;
+            const client = normalize(clientFilter.value);
+            const grower = normalize(growerFilter.value);
+            const from = dateFrom.value ? new Date(dateFrom.value) : null;
+            const to = dateTo.value ? new Date(dateTo.value) : null;
+
+            rows.forEach((row) => {
+                const rowStatus = row.dataset.status || '';
+                const rowClient = normalize(row.dataset.client);
+                const rowGrower = normalize(row.dataset.grower);
+                const rowDate = row.dataset.date ? new Date(row.dataset.date) : null;
+
+                const statusOk = !status || rowStatus === status;
+                const clientOk = !client || rowClient.includes(client);
+                const growerOk = !grower || rowGrower.includes(grower);
+                const fromOk = !from || (rowDate && rowDate >= from);
+                const toOk = !to || (rowDate && rowDate <= to);
+
+                row.style.display = (statusOk && clientOk && growerOk && fromOk && toOk) ? '' : 'none';
+            });
+        }
+
+        [statusFilter, clientFilter, growerFilter, dateFrom, dateTo].forEach((el) => {
+            el.addEventListener('input', applyFilters);
+        });
+
+        clearFilters.addEventListener('click', function() {
+            statusFilter.value = '';
+            clientFilter.value = '';
+            growerFilter.value = '';
+            dateFrom.value = '';
+            dateTo.value = '';
+            applyFilters();
+        });
+    })();
+</script>
 {% endblock %}
 

@@ -1,15 +1,25 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Lot QC Reports</h2>
-    <table class="table">
+<div class="page-header">
+    <div>
+        <h2>Reportes QC de lotes</h2>
+        <p class="subtle">Consulta resultados y descarga el PDF del an&aacute;lisis.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('create_lot_qc') }}" class="btn btn-primary">Crear QC lote</a>
+        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Inicio</a>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
         <thead>
             <tr>
-                <th>Lot ID</th>
-                <th>Date</th>
-                <th>Analyst</th>
-                <th>Details</th>
+                <th>Lote</th>
+                <th>Fecha</th>
+                <th>Analista</th>
+                <th class="actions">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -18,13 +28,19 @@
                 <td>{{ record.lot_id }}</td>
                 <td>{{ record.date.strftime('%Y-%m-%d') }}</td>
                 <td>{{ record.analyst }}</td>
-                <td>
-                    <a href="{{ url_for('view_lot_qc_report', report_id=record.id) }}" class="btn btn-primary btn-sm">View Report</a>
+                <td class="actions">
+                    <a href="{{ url_for('view_lot_qc_report', report_id=record.id) }}" class="btn btn-primary btn-sm">Ver</a>
+                    <a href="{{ url_for('view_lot_qc_report_pdf', report_id=record.id) }}" class="btn btn-outline-secondary btn-sm" target="_blank">PDF</a>
                 </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="6">No se encontraron análisis de calidad en la base de datos.</td>
+                <td colspan="4">
+                    <div class="empty-state">
+                        <div>No se encontraron an&aacute;lisis de calidad en la base de datos.</div>
+                        <a href="{{ url_for('create_lot_qc') }}" class="btn btn-primary btn-sm">Crear QC lote</a>
+                    </div>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

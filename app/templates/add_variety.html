@@ -1,9 +1,31 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Agregar Nueva Variedad</h2>
-<form method="POST">
-    {{ form.hidden_tag() }}
-    <div class="form-group">{{ form.name.label }} {{ form.name(class="form-control") }}</div><br>
-    <div>{{ form.submit(class="btn btn-primary") }}</div>
-</form>
+<div class="page-header">
+    <div>
+        <h2>Agregar nueva variedad</h2>
+        <p class="subtle">Define la variedad a utilizar en recepciones.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('list_varieties') }}" class="btn btn-outline-secondary">Volver al listado</a>
+    </div>
+</div>
+
+<div class="form-section">
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="row g-3">
+            <div class="col-md-6">
+                {{ form.name.label(class="form-label required") }}
+                {{ form.name(class="form-control", aria_describedby="variety_name_error") }}
+                {% if form.name.errors %}
+                <div id="variety_name_error" class="field-error" role="alert">{{ form.name.errors[0] }}</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="page-actions mt-4">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('list_varieties') }}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
 {% endblock %}

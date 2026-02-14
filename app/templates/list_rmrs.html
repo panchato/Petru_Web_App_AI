@@ -1,16 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Listado de Recepciones</h2>
+<div class="page-header">
+    <div>
+        <h2>Listado de recepciones</h2>
+        <p class="subtle">Gestiona recepciones y crea lotes asociados.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('create_raw_material_reception') }}" class="btn btn-primary">Crear recepci&oacute;n</a>
+    </div>
+</div>
 <div class="table-responsive">
 <table class="table table-striped" id="myTable">
     <thead>
         <tr>
             <th scope="col">#</th>
-            <th scope="col">Fecha y Hora</th>
-            <th scope="col">Guia</th>
+            <th scope="col">Fecha y hora</th>
+            <th scope="col">Gu&iacute;a</th>
             <th scope="col">Cliente</th>
             <th scope="col">Productor</th>
             <th scope="col">Lotes</th>
+            <th class="actions">Acciones</th>
         </tr>
     </thead>
     <tbody>
@@ -18,7 +27,8 @@
         <tr>
             <td>
                 <button class="btn btn-info btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#details{{ reception.id }}" aria-expanded="false" aria-controls="details{{ reception.id }}">
-                    +</button>
+                    +
+                </button>
             </td>
             <td>{{ reception.date.strftime('%d-%m-%Y') }} {{ reception.time.strftime('%H:%M') }}</td>
             <td>{{ reception.waybill }}</td>
@@ -39,10 +49,18 @@
                 {% endfor %}
             </div>
             </td>
+            <td class="actions">
+                <a href="{{ url_for('create_lot', reception_id=reception.id) }}" class="btn btn-outline-secondary btn-sm">Crear lote</a>
+            </td>
         </tr>
         {% else %}
         <tr>
-            <td colspan="5">No se encontraron recepciones en la base de datos.</td>
+            <td colspan="7">
+                <div class="empty-state">
+                    <div>No se encontraron recepciones en la base de datos.</div>
+                    <a href="{{ url_for('create_raw_material_reception') }}" class="btn btn-primary btn-sm">Crear recepci&oacute;n</a>
+                </div>
+            </td>
         </tr>
         {% endfor %}
     </tbody>

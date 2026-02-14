@@ -1,7 +1,44 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container">
-<h2>Listado de Fumigaciones</h2>
+<div class="page-header">
+    <div>
+        <h2>Listado de fumigaciones</h2>
+        <p class="subtle">Controla el estado, documentos y pr&oacute;ximas acciones.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('create_fumigation') }}" class="btn btn-primary">Crear fumigaci&oacute;n</a>
+        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Inicio</a>
+    </div>
+</div>
+
+<form class="filters" id="fumigationFilters" aria-label="Filtros r&aacute;pidos de fumigaciones">
+    <div>
+        <label class="form-label">Estado</label>
+        <select class="form-select" id="fumigationStatus">
+            <option value="">Todos</option>
+            <option value="asignada">Asignada</option>
+            <option value="en_fumigacion">En fumigaci&oacute;n</option>
+            <option value="finalizada">Finalizada</option>
+        </select>
+    </div>
+    <div>
+        <label class="form-label">Orden de trabajo</label>
+        <input type="text" class="form-control" id="workOrderFilter" placeholder="Buscar OT">
+    </div>
+    <div>
+        <label class="form-label">Desde</label>
+        <input type="date" class="form-control" id="fumigationFrom">
+    </div>
+    <div>
+        <label class="form-label">Hasta</label>
+        <input type="date" class="form-control" id="fumigationTo">
+    </div>
+    <div>
+        <button type="button" class="btn btn-outline-secondary" id="fumigationClear">Limpiar</button>
+    </div>
+</form>
+
 <div class="table-responsive">
 <table class="table table-striped table-searchable">
     <thead>
@@ -15,7 +52,20 @@
     </thead>
     <tbody>
         {% for fumigation in fumigations %}
-        <tr>
+        {% if fumigation.real_end_date is not none %}
+            {% set status_key = 'finalizada' %}
+            {% set status_label = 'Finalizada' %}
+        {% elif fumigation.lots|selectattr('fumigation_status', 'equalto', '3')|list|length > 0 %}
+            {% set status_key = 'en_fumigacion' %}
+            {% set status_label = 'En fumigaci&oacute;n' %}
+        {% elif fumigation.lots|selectattr('fumigation_status', 'equalto', '2')|list|length > 0 %}
+            {% set status_key = 'asignada' %}
+            {% set status_label = 'Asignada' %}
+        {% else %}
+            {% set status_key = 'desconocida' %}
+            {% set status_label = 'Desconocida' %}
+        {% endif %}
+        <tr data-status="{{ status_key }}" data-order="{{ fumigation.work_order }}" data-date="{{ fumigation.real_start_date.isoformat() if fumigation.real_start_date else '' }}">
             <td>{{ fumigation.work_order }}</td>
             <td>
                 {% for lot in fumigation.lots %}
@@ -23,21 +73,15 @@
                 {% endfor %}
             </td>
             <td>
-                {% if fumigation.real_end_date is not none %}
-                    <span class="badge fw-bold" style="background-color: #198754; color: white;">Finalizada</span>
-                {% elif fumigation.lots|selectattr('fumigation_status', 'equalto', '3')|list|length > 0 %}
-                    <span class="badge fw-bold" style="background-color: #000000; color: white;">En Fumigaci&oacute;n</span>
-                {% elif fumigation.lots|selectattr('fumigation_status', 'equalto', '2')|list|length > 0 %}
-                    <span class="badge fw-bold" style="background-color: #ffc107; color: white;">Asignada</span>
-                {% else %}
-                    <span class="badge fw-bold bg-secondary">Desconocido</span>
-                {% endif %}
+                <span class="status-badge {% if status_key == 'finalizada' %}status-done{% elif status_key == 'en_fumigacion' %}status-active{% elif status_key == 'asignada' %}status-assigned{% else %}status-unknown{% endif %}">
+                    {{ status_label }}
+                </span>
             </td>
             <td>
                 {% if fumigation.real_end_date is none and fumigation.lots|selectattr('fumigation_status', 'equalto', '2')|list|length > 0 %}
-                    <a href="{{ url_for('start_fumigation', fumigation_id=fumigation.id) }}" class="btn btn-sm" style="background-color: #ffc107; color: white;">Iniciar</a>
+                    <a href="{{ url_for('start_fumigation', fumigation_id=fumigation.id) }}" class="btn btn-sm btn-primary">Iniciar</a>
                 {% elif fumigation.lots|selectattr('fumigation_status', 'equalto', '3')|list|length > 0 %}
-                    <a href="{{ url_for('complete_fumigation', fumigation_id=fumigation.id) }}" class="btn btn-sm" style="background-color: #000000; color: white;">Completar</a>
+                    <a href="{{ url_for('complete_fumigation', fumigation_id=fumigation.id) }}" class="btn btn-sm btn-primary">Completar</a>
                 {% endif %}
             </td>
             <td>
@@ -63,11 +107,65 @@
         </tr>
         {% else %}
         <tr>
-            <td colspan="5">No se encontraron fumigaciones en la base de datos.</td>
+            <td colspan="5">
+                <div class="empty-state">
+                    <div>No se encontraron fumigaciones en la base de datos.</div>
+                    <a href="{{ url_for('create_fumigation') }}" class="btn btn-primary btn-sm">Crear fumigaci&oacute;n</a>
+                </div>
+            </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 </div>
 </div>
+<script>
+    (function() {
+        const statusFilter = document.getElementById('fumigationStatus');
+        const workOrderFilter = document.getElementById('workOrderFilter');
+        const dateFrom = document.getElementById('fumigationFrom');
+        const dateTo = document.getElementById('fumigationTo');
+        const clearBtn = document.getElementById('fumigationClear');
+        const rows = Array.from(document.querySelectorAll('table.table-searchable tbody tr'));
+
+        function normalize(value) {
+            return (value || '').toLowerCase();
+        }
+
+        function applyFilters() {
+            const status = statusFilter.value;
+            const order = normalize(workOrderFilter.value);
+            const from = dateFrom.value ? new Date(dateFrom.value) : null;
+            const to = dateTo.value ? new Date(dateTo.value) : null;
+
+            rows.forEach((row) => {
+                if (!row.dataset || !row.dataset.status) {
+                    return;
+                }
+                const rowStatus = row.dataset.status || '';
+                const rowOrder = normalize(row.dataset.order);
+                const rowDate = row.dataset.date ? new Date(row.dataset.date) : null;
+
+                const statusOk = !status || rowStatus === status;
+                const orderOk = !order || rowOrder.includes(order);
+                const fromOk = !from || (rowDate && rowDate >= from);
+                const toOk = !to || (rowDate && rowDate <= to);
+
+                row.style.display = (statusOk && orderOk && fromOk && toOk) ? '' : 'none';
+            });
+        }
+
+        [statusFilter, workOrderFilter, dateFrom, dateTo].forEach((el) => {
+            el.addEventListener('input', applyFilters);
+        });
+
+        clearBtn.addEventListener('click', function() {
+            statusFilter.value = '';
+            workOrderFilter.value = '';
+            dateFrom.value = '';
+            dateTo.value = '';
+            applyFilters();
+        });
+    })();
+</script>
 {% endblock %}

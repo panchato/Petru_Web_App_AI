@@ -1,28 +1,48 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Listado de Productores</h2>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th scope="col">#</th>
-            <th scope="col">Razón Social</th>
-            <th scope="col">Rut</th>
-            <th scope="col">Código CSG</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for grower in growers %}
-        <tr>
-            <th scope="row">{{ loop.index }}</th>
-            <td>{{ grower.name }}</td>
-            <td>{{ grower.tax_id }}</td>
-            <td>{{ grower.csg_code }}</td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="6">No se encontraron productores en la base de datos.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="page-header">
+    <div>
+        <h2>Listado de productores</h2>
+        <p class="subtle">Gestiona productores asociados.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('add_grower') }}" class="btn btn-primary">Agregar productor</a>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Raz&oacute;n Social</th>
+                <th scope="col">RUT</th>
+                <th scope="col">C&oacute;digo CSG</th>
+                <th class="actions">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for grower in growers %}
+            <tr>
+                <th scope="row">{{ loop.index }}</th>
+                <td>{{ grower.name }}</td>
+                <td>{{ grower.tax_id }}</td>
+                <td>{{ grower.csg_code }}</td>
+                <td class="actions">
+                    <a href="{{ url_for('edit_grower', grower_id=grower.id) }}" class="btn btn-outline-secondary btn-sm">Editar</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5">
+                    <div class="empty-state">
+                        <div>No se encontraron productores en la base de datos.</div>
+                        <a href="{{ url_for('add_grower') }}" class="btn btn-primary btn-sm">Agregar productor</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

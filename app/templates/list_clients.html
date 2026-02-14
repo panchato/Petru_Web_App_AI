@@ -1,30 +1,50 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Listado de Clientes</h2>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th scope="col">#</th>
-            <th scope="col">Razón Social</th>
-            <th scope="col">Rut</th>
-            <th scope="col">Dirección</th>
-            <th scope="col">Comuna</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for client in clients %}
-        <tr>
-            <th scope="row">{{ loop.index }}</th>
-            <td>{{ client.name }}</td>
-            <td>{{ client.tax_id }}</td>
-            <td>{{ client.address }}</td>
-            <td>{{ client.comuna }}</td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="6">No se encontraron clientes en la base de datos.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="page-header">
+    <div>
+        <h2>Listado de clientes</h2>
+        <p class="subtle">Gestiona registros de clientes.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('add_client') }}" class="btn btn-primary">Agregar cliente</a>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Raz&oacute;n Social</th>
+                <th scope="col">RUT</th>
+                <th scope="col">Direcci&oacute;n</th>
+                <th scope="col">Comuna</th>
+                <th class="actions">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for client in clients %}
+            <tr>
+                <th scope="row">{{ loop.index }}</th>
+                <td>{{ client.name }}</td>
+                <td>{{ client.tax_id }}</td>
+                <td>{{ client.address }}</td>
+                <td>{{ client.comuna }}</td>
+                <td class="actions">
+                    <a href="{{ url_for('edit_client', client_id=client.id) }}" class="btn btn-outline-secondary btn-sm">Editar</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6">
+                    <div class="empty-state">
+                        <div>No se encontraron clientes en la base de datos.</div>
+                        <a href="{{ url_for('add_client') }}" class="btn btn-primary btn-sm">Agregar cliente</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

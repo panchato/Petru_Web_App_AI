@@ -1,13 +1,53 @@
 {% extends "base.html" %}
 {% block content %}
-    <h2>Agregar Nuevo Cliente</h2>
+<div class="page-header">
+    <div>
+        <h2>Agregar nuevo cliente</h2>
+        <p class="subtle">Registra los datos b&aacute;sicos del cliente.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('list_clients') }}" class="btn btn-outline-secondary">Volver al listado</a>
+    </div>
+</div>
+
+<div class="form-section">
     <form method="POST">
-      {{ form.hidden_tag() }}
-        <div class="form-group">{{ form.name.label }} {{ form.name(class="form-control") }}</div>
-        <div class="form-group">{{ form.tax_id.label }} {{ form.tax_id(class="form-control") }}</div>
-        <div class="form-group">{{ form.address.label }} {{ form.address(class="form-control") }}</div>
-        <div class="form-group">{{ form.comuna.label }} {{ form.comuna(class="form-control") }}</div><br>
-        <div>{{ form.submit(class="btn btn-primary") }}</div>
-      </form>
-    {% endblock %}
+        {{ form.hidden_tag() }}
+        <div class="row g-3">
+            <div class="col-md-6">
+                {{ form.name.label(class="form-label required") }}
+                {{ form.name(class="form-control", aria_describedby="client_name_error") }}
+                {% if form.name.errors %}
+                <div id="client_name_error" class="field-error" role="alert">{{ form.name.errors[0] }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                {{ form.tax_id.label(class="form-label required") }}
+                {{ form.tax_id(class="form-control", aria_describedby="client_tax_error") }}
+                {% if form.tax_id.errors %}
+                <div id="client_tax_error" class="field-error" role="alert">{{ form.tax_id.errors[0] }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                {{ form.address.label(class="form-label") }}
+                {{ form.address(class="form-control", aria_describedby="client_address_error") }}
+                {% if form.address.errors %}
+                <div id="client_address_error" class="field-error" role="alert">{{ form.address.errors[0] }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                {{ form.comuna.label(class="form-label") }}
+                {{ form.comuna(class="form-control", aria_describedby="client_comuna_error") }}
+                {% if form.comuna.errors %}
+                <div id="client_comuna_error" class="field-error" role="alert">{{ form.comuna.errors[0] }}</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="page-actions mt-4">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('list_clients') }}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
 

@@ -1,11 +1,45 @@
 {% extends "base.html" %}
 {% block content %}
-    <h2>Agregar Nuevo Productor</h2>
+<div class="page-header">
+    <div>
+        <h2>Agregar nuevo productor</h2>
+        <p class="subtle">Registra productor y c&oacute;digo CSG.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('list_growers') }}" class="btn btn-outline-secondary">Volver al listado</a>
+    </div>
+</div>
+
+<div class="form-section">
     <form method="POST">
         {{ form.hidden_tag() }}
-        <div class="form-group">{{ form.name.label }} {{ form.name(class="form-control") }}</div>
-        <div class="form-group">{{ form.tax_id.label }} {{ form.tax_id(class="form-control") }}</div>
-        <div class="form-group">{{ form.csg_code.label }} {{ form.csg_code(class="form-control") }}</div><br>
-        <div>{{ form.submit(class="btn btn-primary") }}</div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                {{ form.name.label(class="form-label required") }}
+                {{ form.name(class="form-control", aria_describedby="grower_name_error") }}
+                {% if form.name.errors %}
+                <div id="grower_name_error" class="field-error" role="alert">{{ form.name.errors[0] }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                {{ form.tax_id.label(class="form-label required") }}
+                {{ form.tax_id(class="form-control", aria_describedby="grower_tax_error") }}
+                {% if form.tax_id.errors %}
+                <div id="grower_tax_error" class="field-error" role="alert">{{ form.tax_id.errors[0] }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                {{ form.csg_code.label(class="form-label") }}
+                {{ form.csg_code(class="form-control", aria_describedby="grower_csg_error") }}
+                {% if form.csg_code.errors %}
+                <div id="grower_csg_error" class="field-error" role="alert">{{ form.csg_code.errors[0] }}</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="page-actions mt-4">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('list_growers') }}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
     </form>
-    {% endblock %}
+</div>
+{% endblock %}

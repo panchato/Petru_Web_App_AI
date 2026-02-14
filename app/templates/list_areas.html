@@ -1,12 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
-    <h2>Listado de Areas</h2>
+<div class="page-header">
+    <div>
+        <h2>Listado de &aacute;reas</h2>
+        <p class="subtle">Define &aacute;reas operativas.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('add_area') }}" class="btn btn-primary">Agregar &aacute;rea</a>
+    </div>
+</div>
+
+<div class="table-responsive">
     <table class="table table-striped">
         <thead>
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">Area</th>
-                <th scope="col">Descripción</th>
+                <th scope="col">&Aacute;rea</th>
+                <th scope="col">Descripci&oacute;n</th>
+                <th class="actions">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -15,12 +26,21 @@
                 <th scope="row">{{ loop.index }}</th>
                 <td>{{ area.name }}</td>
                 <td>{{ area.description }}</td>
+                <td class="actions">
+                    <a href="{{ url_for('edit_area', area_id=area.id) }}" class="btn btn-outline-secondary btn-sm">Editar</a>
+                </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="6">No se encontraron áreas en la base de datos.</td>
+                <td colspan="4">
+                    <div class="empty-state">
+                        <div>No se encontraron &aacute;reas en la base de datos.</div>
+                        <a href="{{ url_for('add_area') }}" class="btn btn-primary btn-sm">Agregar &aacute;rea</a>
+                    </div>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+</div>
 {% endblock %}

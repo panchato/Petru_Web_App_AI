@@ -2,8 +2,26 @@
 {% block content %}
 <div class="container">
 
-    <h2>Completar Fumigaci&oacute;n - {{ fumigation.work_order }}</h2>
+    <div class="page-header">
+        <div>
+            <h2>Completar fumigaci&oacute;n</h2>
+            <p class="subtle">Orden de trabajo {{ fumigation.work_order }}.</p>
+        </div>
+        <div class="page-actions">
+            <a href="{{ url_for('list_fumigations') }}" class="btn btn-outline-secondary">Volver al listado</a>
+        </div>
+    </div>
 
+    <div class="stepper" aria-label="Progreso fumigaci&oacute;n">
+        <div class="stepper-item">1. Creaci&oacute;n</div>
+        <div class="stepper-item">2. Inicio</div>
+        <div class="stepper-item active">3. Finalizaci&oacute;n</div>
+    </div>
+    <div class="callout">
+        Siguiente acci&oacute;n recomendada: descargar el certificado y archivar la OT.
+    </div>
+
+    <div class="form-section">
     <div class="mb-3">
         <p><strong>Orden de Trabajo:</strong> {{ fumigation.work_order }}</p>
         <p><strong>Lotes:</strong>
@@ -17,33 +35,37 @@
         {{ form.hidden_tag() }}
 
         <div class="form-group">
-            {{ form.real_end_date.label(class="form-label") }}
-            {{ form.real_end_date(class="form-control", type="date", required=True) }}
+            {{ form.real_end_date.label(class="form-label required") }}
+            {{ form.real_end_date(class="form-control", type="date", required=True, aria_describedby="end_date_help end_date_error") }}
+            <div id="end_date_help" class="form-help">Fecha efectiva de t&eacute;rmino.</div>
             {% if form.real_end_date.errors %}
-            <div class="alert alert-danger">{{ form.real_end_date.errors[0] }}</div>
+            <div id="end_date_error" class="field-error" role="alert">{{ form.real_end_date.errors[0] }}</div>
             {% endif %}
         </div>
 
         <div class="form-group">
-            {{ form.real_end_time.label(class="form-label") }}
-            {{ form.real_end_time(class="form-control", type="time", required=True) }}
+            {{ form.real_end_time.label(class="form-label required") }}
+            {{ form.real_end_time(class="form-control", type="time", required=True, aria_describedby="end_time_help end_time_error") }}
+            <div id="end_time_help" class="form-help">Hora efectiva de t&eacute;rmino.</div>
             {% if form.real_end_time.errors %}
-            <div class="alert alert-danger">{{ form.real_end_time.errors[0] }}</div>
+            <div id="end_time_error" class="field-error" role="alert">{{ form.real_end_time.errors[0] }}</div>
             {% endif %}
         </div>
 
         <div class="form-group">
             {{ form.certificate_doc.label(class="form-label") }}
-            {{ form.certificate_doc(class="form-control", accept=".pdf") }}
+            {{ form.certificate_doc(class="form-control", accept=".pdf", aria_describedby="cert_help cert_error") }}
+            <div id="cert_help" class="form-help">Adjunta certificado en PDF (opcional).</div>
             {% if form.certificate_doc.errors %}
-            <div class="alert alert-danger">{{ form.certificate_doc.errors[0] }}</div>
+            <div id="cert_error" class="field-error" role="alert">{{ form.certificate_doc.errors[0] }}</div>
             {% endif %}
         </div>
 
         <div class="form-actions">
             {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('list_fumigations') }}" class="btn btn-secondary">Cancelar</a>
+            <a href="{{ url_for('list_fumigations') }}" class="btn btn-outline-secondary">Cancelar</a>
         </div>
     </form>
+    </div>
 </div>
 {% endblock %}

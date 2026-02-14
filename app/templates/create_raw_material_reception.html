@@ -1,59 +1,90 @@
 {% extends 'base.html' %}
 {% block content %}
-<script>
-  $(document).ready(function() {
-      {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-      var category = "{{ messages[0][0] }}";
-      var message = "{{ messages[0][1] }}";
+<div class="page-header">
+    <div>
+        <h2>Recepci&oacute;n de materia prima</h2>
+        <p class="subtle">Paso 1: registra los datos de la recepci&oacute;n.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('list_rmrs') }}" class="btn btn-outline-secondary">Volver al listado</a>
+    </div>
+</div>
 
-      // HTML structure for the modal content based on the message category
-      if (category === 'success') {
-          $('.modal-body').html('<div class="alert alert-success" role="alert">' + message + '</div>');
-          $('.modal-footer').html('<button type="button" class="btn btn-secondary" onclick="window.location.href=\'{{ url_for('index') }}\'">Home</button>' +
-                                  '<button type="button" class="btn btn-primary" onclick="window.location.href=\'{{ url_for('create_lot', reception_id=reception_id) if reception_id else '#'}}\'">Crear Lote</button>');
-      } else if (category === 'warning') {
-          $('.modal-body').html('<div class="alert alert-warning" role="alert">' + message + '</div>');
-          $('.modal-footer').html('<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>');
-      } else {
-          $('.modal-body').text(message);
-          $('.modal-footer').html('<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>');
-      }
-      $('#Modal').modal('show');
-      {% endif %}
-      {% endwith %}
-  });
-</script>
-  
-<h2>Recepción de Materia Prima - Primer Paso</h2>
+<div class="form-section">
 <form method="POST">
     {{ form.hidden_tag() }}
-    <div class="form-group">{{ form.client_id.label }} {{ form.client_id(class="form-select") }}</div>
-    <div class="form-group">{{ form.grower_id.label }} {{ form.grower_id(class="form-select") }}</div>
-    <div class="form-group">{{ form.waybill.label }} {{ form.waybill(class="form-control") }}</div>
-    <div class="form-group">{{ form.date.label }} {{ form.date(class="form-control") }}</div>
-    <div class="form-group">{{ form.time.label }} {{ form.time(class="form-control") }}</div>
-    <div class="form-group">{{ form.truck_plate.label }} {{ form.truck_plate(class="form-control", placeholder="ABCD12 ó AB1234") }}</div>
-    <div class="form-group">{{ form.trucker_name.label }} {{ form.trucker_name(class="form-control") }}</div>
-    <div class="form-group">{{ form.observations.label }} {{ form.observations(class="form-control", rows="3") }}</div><br>
-    <div>{{ form.submit(class="btn btn-primary") }}</div>
+    <div class="row g-3">
+        <div class="col-md-6">
+            {{ form.client_id.label(class="form-label required") }}
+            {{ form.client_id(class="form-select", aria_describedby="reception_client_error") }}
+            {% if form.client_id.errors %}
+            <div id="reception_client_error" class="field-error" role="alert">{{ form.client_id.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            {{ form.grower_id.label(class="form-label required") }}
+            {{ form.grower_id(class="form-select", aria_describedby="reception_grower_error") }}
+            {% if form.grower_id.errors %}
+            <div id="reception_grower_error" class="field-error" role="alert">{{ form.grower_id.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            {{ form.waybill.label(class="form-label required") }}
+            {{ form.waybill(class="form-control", aria_describedby="reception_waybill_error") }}
+            {% if form.waybill.errors %}
+            <div id="reception_waybill_error" class="field-error" role="alert">{{ form.waybill.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-3">
+            {{ form.date.label(class="form-label required") }}
+            {{ form.date(class="form-control", aria_describedby="reception_date_error") }}
+            {% if form.date.errors %}
+            <div id="reception_date_error" class="field-error" role="alert">{{ form.date.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-3">
+            {{ form.time.label(class="form-label required") }}
+            {{ form.time(class="form-control", aria_describedby="reception_time_error") }}
+            {% if form.time.errors %}
+            <div id="reception_time_error" class="field-error" role="alert">{{ form.time.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            {{ form.truck_plate.label(class="form-label") }}
+            {{ form.truck_plate(class="form-control", placeholder="ABCD12 o AB1234", aria_describedby="reception_plate_error") }}
+            {% if form.truck_plate.errors %}
+            <div id="reception_plate_error" class="field-error" role="alert">{{ form.truck_plate.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            {{ form.trucker_name.label(class="form-label") }}
+            {{ form.trucker_name(class="form-control", aria_describedby="reception_trucker_error") }}
+            {% if form.trucker_name.errors %}
+            <div id="reception_trucker_error" class="field-error" role="alert">{{ form.trucker_name.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            {{ form.observations.label(class="form-label") }}
+            {{ form.observations(class="form-control", rows="3", aria_describedby="reception_obs_error") }}
+            {% if form.observations.errors %}
+            <div id="reception_obs_error" class="field-error" role="alert">{{ form.observations.errors[0] }}</div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="page-actions mt-4">
+        {{ form.submit(class="btn btn-primary") }}
+        <a href="{{ url_for('list_rmrs') }}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
 </form>
-<!-- Modal -->
-<div class="modal fade" id="Modal" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-      <div class="modal-content">
-          <div class="modal-header">
-              <h5 class="modal-title" id="ModalLabel">Mensaje del Sistema</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-          <!-- Message will be injected here -->
-          </div>
-          <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-          </div>
-      </div>
-  </div>
 </div>
+
+{% if reception_id %}
+<div class="alert alert-success d-flex flex-wrap justify-content-between align-items-center mt-4">
+    <div>Recepci&oacute;n creada correctamente.</div>
+    <div class="page-actions">
+        <a href="{{ url_for('create_lot', reception_id=reception_id) }}" class="btn btn-primary btn-sm">Crear lote</a>
+    </div>
+</div>
+{% endif %}
 
 {% endblock %}

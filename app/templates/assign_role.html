@@ -1,10 +1,38 @@
 {% extends "base.html" %}
 {% block content %}
-    <h2>Asignar Rol a Usuario</h2>
+<div class="page-header">
+    <div>
+        <h2>Asignar rol a usuario</h2>
+        <p class="subtle">Relaciona usuarios con roles de acceso.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('list_users') }}" class="btn btn-outline-secondary">Volver a usuarios</a>
+    </div>
+</div>
+
+<div class="form-section">
     <form method="POST">
         {{ form.hidden_tag() }}
-        <div class="form-group">{{ form.user_id.label }} {{ form.user_id(class="form-control") }}</div>
-        <div class="form-group"> {{ form.role_id.label }} {{ form.role_id(class="form-control") }}</div><br>
-        <div class="form-group">{{ form.submit(class="btn btn-primary") }}</div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                {{ form.user_id.label(class="form-label required") }}
+                {{ form.user_id(class="form-select", aria_describedby="assign_user_error") }}
+                {% if form.user_id.errors %}
+                <div id="assign_user_error" class="field-error" role="alert">{{ form.user_id.errors[0] }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                {{ form.role_id.label(class="form-label required") }}
+                {{ form.role_id(class="form-select", aria_describedby="assign_role_error") }}
+                {% if form.role_id.errors %}
+                <div id="assign_role_error" class="field-error" role="alert">{{ form.role_id.errors[0] }}</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="page-actions mt-4">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('list_users') }}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
     </form>
+</div>
 {% endblock %}
