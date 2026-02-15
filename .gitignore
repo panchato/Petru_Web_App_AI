@@ -79,3 +79,9 @@ venv/
 # App uploads/static assets
 app/static/images/
 app/static/pdf/
+
+# Local-only files
+app/instance/*.db
+app.log
+.claude/
+PROJECT_NOTES.md
