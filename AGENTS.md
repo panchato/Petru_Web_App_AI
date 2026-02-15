@@ -26,7 +26,12 @@
   - `.\windows_venv\Scripts\python.exe setup_db.py`
 - Quick syntax validation for changed Python files:
   - `python -m py_compile app\__init__.py app\config.py app\forms.py app\models.py app\routes.py run.py setup_db.py`
- - Default admin (dev only): `panchato@gmail.com` / `dx12bb40`
+- Default admin (dev only): `panchato@gmail.com` / `dx12bb40`
+- Session-start git checks:
+  - `git fetch --all --prune`
+  - `git status --short --branch`
+  - `git branch -vv`
+  - `gh pr list --state open`
 
 ## Coding Style & Naming Conventions
 - Python: 4-space indentation, clear function names, minimal side effects in routes.
@@ -45,9 +50,31 @@
 - Access control decorators in `app/routes.py`:
   - `@admin_required`, `@area_role_required(area, roles)`, `@dashboard_required` (Admin bypass).
 - SQLAlchemy 2.0: use `db.engine.connect()` + `text(...)`, avoid deprecated `db.engine.execute()`.
+- Forms with dynamic choices should populate `SelectField` options in `__init__`.
 - File uploads: store under `app/static/images/` or `app/static/pdf/` and normalize paths with `.replace('\\', '/')`.
+- Upload naming convention: `{uuid}_{timestamp}_{secure_filename}`.
 - CSRF: no global `CSRFProtect`; pass `csrf_form` to templates when needed outside forms.
 - WeasyPrint on Windows requires GTK/Pango (MSYS2) and `C:\msys64\mingw64\bin` in `PATH`.
+
+## Domain Rules
+- Lot net weight formula:
+  - `loaded_truck_weight - empty_truck_weight - (packaging_tare * packagings_quantity)`
+- `lot_number` and `variety.name` must remain unique.
+- QC invariants (lot and sample):
+  - `units = lessthan30 + between3032 + between3234 + between3436 + morethan36` and must equal `100`
+  - `shelled_weight = extra_light + light + light_amber + amber`
+  - `inshell_weight > 0`
+  - `yieldpercentage = round((shelled_weight / inshell_weight) * 100, 2)`
+- Fumigation state machine (`Lot.fumigation_status`):
+  - `1` available -> `2` assigned -> `3` started -> `4` completed
+  - Enforce valid transitions in routes.
+
+## Route Map
+- Auth: `/login`, `/logout`
+- Admin CRUD: `/add_*`, `/list_*`, `/edit_*`, `/toggle_*`, `/assign_*`
+- Raw material: `/create_raw_material_reception`, `/create_lot/<id>`, `/list_rmrs`, `/list_lots`, `/register_full_truck_weight/<id>`, `/lots/<id>/labels.pdf`
+- QC: `/create_lot_qc`, `/create_sample_qc`, `/list_lot_qc_reports`, `/list_sample_qc_reports`, detail pages + `/pdf`
+- Fumigation: `/create_fumigation`, `/list_fumigations`, `/start_fumigation/<id>`, `/complete_fumigation/<id>`
 
 ## Testing Guidelines
 - No formal automated test suite is currently enforced.
@@ -56,6 +83,12 @@
   - manually smoke-test affected flows (auth, admin, raw material, QC, fumigation)
 - Validate QC totals and fumigation state transitions in the UI.
 - If adding tests, use `unittest`-compatible naming (`test_*.py`) under a `tests/` folder.
+
+## Change Checklist
+- Keep model/form/template/route fields aligned for every behavior change.
+- For data model changes, update migration strategy/docs accordingly.
+- For upload/PDF changes, verify paths and rendering on Windows.
+- Update docs (`README.md`, `AGENTS.md`, and if needed `PROJECT_NOTES.md`) when business rules or flows change.
 
 ## Commit & Pull Request Guidelines
 - Use short, imperative commit messages (examples in history: `Add ...`, `Split X: ...`).
