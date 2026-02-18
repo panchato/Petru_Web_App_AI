@@ -88,7 +88,7 @@
 - Keep model/form/template/route fields aligned for every behavior change.
 - For data model changes, update migration strategy/docs accordingly.
 - For upload/PDF changes, verify paths and rendering on Windows.
-- Update docs (`README.md`, `AGENTS.md`, and if needed `PROJECT_NOTES.md`) when business rules or flows change.
+- Update docs in `AGENTS.md` (and `PROJECT_NOTES.md` only if explicitly used in-session) when business rules or flows change.
 
 ## Commit & Pull Request Guidelines
 - Use short, imperative commit messages (examples in history: `Add ...`, `Split X: ...`).
@@ -99,6 +99,40 @@
   - dependency/merge order when stacked
 - For the current split workflow: merge core/backend first, then dependent PRs.
 - Exclude local-only artifacts from PRs: `.claude/`, `PROJECT_NOTES.md`, `app/instance/database.db`, `app.log`.
+
+## Branch Strategy (Concrete)
+- Trunk branch: `master` only. No direct commits; all work goes through PR branches.
+- Regular work branch naming: `feature/<area>/<ticket-or-topic>-<slug>`.
+- Area values for this repo: `auth`, `admin`, `raw-material`, `qc`, `fumigation`, `reporting`, `ui`, `infra`, `docs`.
+- Hotfix branch naming: `hotfix/<ticket-or-topic>-<slug>` from `master`.
+- Chore branch naming: `chore/<topic>-<slug>` from `master`.
+- Branches are single-owner; do not share one feature branch across multiple builders/instances.
+
+## Stacked PR Rules
+- Use stacked branches only when changes are strictly dependent.
+- Stack naming: `stack/<epic>/<nn>-<area>-<slug>` where `<nn>` is `01`, `02`, `03`, ...
+- Base rules:
+  - `stack/.../01-*` targets `master`.
+  - `stack/.../02-*` targets `stack/.../01-*`.
+  - `stack/.../03-*` targets `stack/.../02-*`.
+- Merge order is always lowest index to highest index.
+- If work can be reviewed independently, do not stack; open separate `feature/...` branches from `master`.
+
+## Multi-Instance Workflow
+- Assign one branch per instance and per concern to avoid push collisions.
+- Keep each branch limited to one concern (backend, UI, reporting/docs, etc.).
+- Sync each active branch with `master` at least daily and always before requesting merge.
+- Delete merged branches promptly to reduce stale branch confusion.
+
+## Current Branch Mapping
+- Legacy split branches currently in repo:
+  - `pr1-fumigation-core`
+  - `pr2-ui-refresh`
+  - `pr3-reporting-docs`
+- New canonical names for the same stack:
+  - `stack/fumigation-workflow/01-fumigation-core`
+  - `stack/fumigation-workflow/02-ui-refresh`
+  - `stack/fumigation-workflow/03-reporting-docs`
 
 ## Security & Configuration Tips
 - Set `SECRET_KEY` and `DATABASE_URL` via environment variables for non-local use.
