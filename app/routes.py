@@ -281,7 +281,8 @@ def index():
             'total_lots': Lot.query.count(),
             'pending_qc_lots': Lot.query.filter_by(has_qc=False).count(),
             'open_receptions': RawMaterialReception.query.filter_by(is_open=True).count(),
-            'active_fumigations': Fumigation.query.filter_by(is_active=True).count(),
+            # Active fumigations are those not completed yet.
+            'active_fumigations': Fumigation.query.filter(Fumigation.real_end_date.is_(None)).count(),
             'fumigation_stage_1': Lot.query.filter_by(fumigation_status='1').count(),
             'fumigation_stage_2': Lot.query.filter_by(fumigation_status='2').count(),
             'fumigation_stage_3': Lot.query.filter_by(fumigation_status='3').count(),
