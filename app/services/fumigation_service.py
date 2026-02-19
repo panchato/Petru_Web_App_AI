@@ -2,31 +2,58 @@ from app import db
 from app.models import Fumigation, Lot
 
 
-class FumigationTransitionError(ValueError):
-    pass
+VALID_TRANSITIONS = {
+    1: [2],
+    2: [3],
+    3: [4],
+    4: [],
+}
+
+
+def _coerce_state(state_value, field_label):
+    try:
+        return int(state_value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"Estado de fumigación {field_label} inválido: {state_value!r}.") from exc
+
+
+def transition_fumigation_status(lot, new_state):
+    current_state = _coerce_state(lot.fumigation_status, "actual")
+    target_state = _coerce_state(new_state, "nuevo")
+    allowed_states = VALID_TRANSITIONS.get(current_state)
+    if allowed_states is None:
+        raise ValueError(f"Estado de fumigación actual no reconocido: {current_state}.")
+
+    if target_state not in allowed_states:
+        lot_ref = getattr(lot, "lot_number", getattr(lot, "id", "?"))
+        allowed_text = ", ".join(str(state) for state in allowed_states) or "ninguno (estado terminal)"
+        raise ValueError(
+            f"Transición inválida para lote {lot_ref}: {current_state} -> {target_state}. "
+            f"Estados permitidos: {allowed_text}."
+        )
+
+    lot.fumigation_status = str(target_state)
+    return lot
+
+
+def can_transition(lot, new_state):
+    try:
+        current_state = _coerce_state(lot.fumigation_status, "actual")
+        target_state = _coerce_state(new_state, "nuevo")
+    except ValueError:
+        return False
+
+    allowed_states = VALID_TRANSITIONS.get(current_state)
+    if allowed_states is None:
+        return False
+    return target_state in allowed_states
 
 
 class FumigationService:
-    AVAILABLE = "1"
-    ASSIGNED = "2"
-    STARTED = "3"
-    COMPLETED = "4"
-
-    _ALLOWED_TRANSITIONS = {
-        AVAILABLE: {ASSIGNED},
-        ASSIGNED: {STARTED},
-        STARTED: {COMPLETED},
-        COMPLETED: set(),
-    }
-
-    @classmethod
-    def _validate_transition(cls, lot, next_status):
-        current_status = lot.fumigation_status
-        allowed_next = cls._ALLOWED_TRANSITIONS.get(current_status, set())
-        if next_status not in allowed_next:
-            raise FumigationTransitionError(
-                f"Transición inválida para lote {lot.lot_number}: {current_status} -> {next_status}."
-            )
+    AVAILABLE = 1
+    ASSIGNED = 2
+    STARTED = 3
+    COMPLETED = 4
 
     @staticmethod
     def _load_lots_for_update(lot_ids):
@@ -46,22 +73,21 @@ class FumigationService:
     @classmethod
     def assign_fumigation(cls, work_order, lot_ids):
         if not lot_ids:
-            raise FumigationTransitionError("Por favor, seleccione al menos un Lote para continuar.")
+            raise ValueError("Por favor, seleccione al menos un Lote para continuar.")
 
         if Fumigation.query.filter_by(work_order=work_order).first():
-            raise FumigationTransitionError("La Orden de Fumigación ya existe. Por favor, use otra.")
+            raise ValueError("La Orden de Fumigación ya existe. Por favor, use otra.")
 
         with cls._transaction_context():
             lots = cls._load_lots_for_update(lot_ids)
             if len(lots) != len(set(lot_ids)):
-                raise FumigationTransitionError("Uno o más lotes seleccionados no existen.")
+                raise ValueError("Uno o más lotes seleccionados no existen.")
 
             fumigation = Fumigation(work_order=work_order)
             db.session.add(fumigation)
 
             for lot in lots:
-                cls._validate_transition(lot, cls.ASSIGNED)
-                lot.fumigation_status = cls.ASSIGNED
+                transition_fumigation_status(lot, cls.ASSIGNED)
                 fumigation.lots.append(lot)
 
             db.session.flush()
@@ -77,12 +103,11 @@ class FumigationService:
         work_order_path=None,
     ):
         if fumigation.real_end_date is not None:
-            raise FumigationTransitionError("Esta fumigación ya fue completada.")
+            raise ValueError("Esta fumigación ya fue completada.")
 
         with cls._transaction_context():
             for lot in fumigation.lots:
-                cls._validate_transition(lot, cls.STARTED)
-                lot.fumigation_status = cls.STARTED
+                transition_fumigation_status(lot, cls.STARTED)
 
             fumigation.real_start_date = real_start_date
             fumigation.real_start_time = real_start_time
@@ -97,12 +122,11 @@ class FumigationService:
     @classmethod
     def complete_fumigation(cls, fumigation, real_end_date, real_end_time, certificate_path=None):
         if fumigation.real_end_date is not None:
-            raise FumigationTransitionError("Esta fumigación ya fue completada.")
+            raise ValueError("Esta fumigación ya fue completada.")
 
         with cls._transaction_context():
             for lot in fumigation.lots:
-                cls._validate_transition(lot, cls.COMPLETED)
-                lot.fumigation_status = cls.COMPLETED
+                transition_fumigation_status(lot, cls.COMPLETED)
 
             fumigation.real_end_date = real_end_date
             fumigation.real_end_time = real_end_time

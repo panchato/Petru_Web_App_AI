@@ -205,6 +205,10 @@ class LotQC(BaseModel, QCMixin):
     __tablename__ = 'lotsqc'
     __table_args__ = (
         db.CheckConstraint(
+            'lessthan30 + between3032 + between3234 + between3436 + morethan36 = 100',
+            name='ck_lotsqc_size_sum_100',
+        ),
+        db.CheckConstraint(
             'units = lessthan30 + between3032 + between3234 + between3436 + morethan36',
             name='ck_lotsqc_units_breakdown',
         ),
@@ -216,6 +220,10 @@ class LotQC(BaseModel, QCMixin):
 class SampleQC(BaseModel, QCMixin):
     __tablename__ = 'samplesqc'
     __table_args__ = (
+        db.CheckConstraint(
+            'lessthan30 + between3032 + between3234 + between3436 + morethan36 = 100',
+            name='ck_samplesqc_size_sum_100',
+        ),
         db.CheckConstraint(
             'units = lessthan30 + between3032 + between3234 + between3436 + morethan36',
             name='ck_samplesqc_units_breakdown',

@@ -2,6 +2,7 @@ import os
 import unittest
 from datetime import date, time
 from pathlib import Path
+from types import SimpleNamespace
 
 TEST_DB_PATH = Path(__file__).resolve().parent / "test_fumigation_service.sqlite3"
 os.environ["DATABASE_URL"] = f"sqlite:///{TEST_DB_PATH.as_posix()}"
@@ -9,7 +10,7 @@ os.environ["SECRET_KEY"] = "test-secret-key"
 
 from app import app, db
 from app.models import Fumigation, Lot, RawMaterialPackaging, RawMaterialReception, Variety
-from app.services.fumigation_service import FumigationService, FumigationTransitionError
+from app.services.fumigation_service import FumigationService, can_transition, transition_fumigation_status
 
 
 class FumigationServiceTests(unittest.TestCase):
@@ -106,7 +107,7 @@ class FumigationServiceTests(unittest.TestCase):
     def test_reject_skip_transition_from_assigned_to_completed(self):
         with app.app_context():
             fumigation = FumigationService.assign_fumigation("OT-200", self.lot_ids)
-            with self.assertRaises(FumigationTransitionError):
+            with self.assertRaises(ValueError):
                 FumigationService.complete_fumigation(
                     fumigation=fumigation,
                     real_end_date=date.today(),
@@ -120,10 +121,41 @@ class FumigationServiceTests(unittest.TestCase):
             db.session.add(lot)
             db.session.commit()
 
-            with self.assertRaises(FumigationTransitionError):
+            with self.assertRaises(ValueError):
                 FumigationService.assign_fumigation("OT-300", self.lot_ids)
 
             self.assertEqual(Fumigation.query.filter_by(work_order="OT-300").count(), 0)
+
+    def test_state_machine_allows_valid_transition_1_to_2(self):
+        with app.app_context():
+            lot = db.session.get(Lot, self.lot_ids[0])
+            lot.fumigation_status = "1"
+            transition_fumigation_status(lot, 2)
+            self.assertEqual(lot.fumigation_status, "2")
+
+    def test_state_machine_rejects_invalid_transition_1_to_4(self):
+        with app.app_context():
+            lot = db.session.get(Lot, self.lot_ids[0])
+            lot.fumigation_status = "1"
+            with self.assertRaises(ValueError):
+                transition_fumigation_status(lot, 4)
+
+    def test_state_machine_rejects_transition_from_terminal_state(self):
+        with app.app_context():
+            lot = db.session.get(Lot, self.lot_ids[0])
+            lot.fumigation_status = "4"
+            with self.assertRaises(ValueError):
+                transition_fumigation_status(lot, 3)
+
+
+class FumigationStateMachineUnitTests(unittest.TestCase):
+    def test_can_transition_returns_true_for_valid_transition(self):
+        lot = SimpleNamespace(fumigation_status="1")
+        self.assertTrue(can_transition(lot, 2))
+
+    def test_can_transition_returns_false_for_invalid_transition(self):
+        lot = SimpleNamespace(fumigation_status="1")
+        self.assertFalse(can_transition(lot, 4))
 
 
 if __name__ == "__main__":

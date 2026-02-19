@@ -67,6 +67,8 @@ class Config(object):
     MAX_UPLOAD_FILE_BYTES = _int_from_env("MAX_UPLOAD_FILE_BYTES", 8 * 1024 * 1024)
     DEFAULT_PAGE_SIZE = _int_from_env("DEFAULT_PAGE_SIZE", 10)
     MAX_PAGE_SIZE = _int_from_env("MAX_PAGE_SIZE", 200)
+    CACHE_TYPE = os.environ.get("CACHE_TYPE", "SimpleCache")
+    CACHE_DEFAULT_TIMEOUT = _int_from_env("CACHE_TIMEOUT_DASHBOARD", 60)
     WTF_CSRF_ENABLED = True
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
     
@@ -76,6 +78,9 @@ class Config(object):
     UPLOAD_ROOT = _default_upload_root()
     UPLOAD_PATH_IMAGE = os.path.join(UPLOAD_ROOT, 'images')
     UPLOAD_PATH_PDF = os.path.join(UPLOAD_ROOT, 'pdf')
+    PDF_CACHE_DIR = os.path.abspath(
+        os.environ.get("PDF_CACHE_DIR", os.path.join(basedir, "static", "pdf_cache"))
+    )
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
     VIRUS_SCAN_ENABLED = str(os.environ.get("VIRUS_SCAN_ENABLED", "0")).lower() in {"1", "true", "yes"}
     VIRUS_SCAN_COMMAND = os.environ.get("VIRUS_SCAN_COMMAND", "clamscan --no-summary")

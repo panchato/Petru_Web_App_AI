@@ -8,7 +8,7 @@ TEST_DB_PATH = Path(__file__).resolve().parent / "test_dashboard_operational.sql
 os.environ["DATABASE_URL"] = f"sqlite:///{TEST_DB_PATH.as_posix()}"
 os.environ["SECRET_KEY"] = "test-secret-key"
 
-from app import app, db, bcrypt  # noqa: E402
+from app import app, db, bcrypt, cache  # noqa: E402
 from app.models import Lot, LotQC, RawMaterialPackaging, RawMaterialReception, Role, User, Variety  # noqa: E402
 
 
@@ -28,6 +28,7 @@ class DashboardOperationalTests(unittest.TestCase):
         self._waybill = 1000
 
         with app.app_context():
+            cache.clear()
             db.drop_all()
             db.create_all()
             self.user_id = self._create_admin_user()

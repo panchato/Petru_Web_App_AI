@@ -5,6 +5,7 @@ from flask import Flask
 from flask import abort, request, g, has_request_context
 from app.config import Config
 from flask_sqlalchemy import SQLAlchemy
+from flask_caching import Cache
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_migrate import Migrate
@@ -15,8 +16,9 @@ from datetime import datetime, timezone
 
 app = Flask(__name__)
 app.config.from_object(Config)
+os.environ.setdefault("PDF_CACHE_DIR", app.config["PDF_CACHE_DIR"])
 app.config["DASHBOARD_LAST_COMMIT_AT"] = datetime.now(timezone.utc).isoformat()
-for path_key in ("UPLOAD_ROOT", "UPLOAD_PATH_IMAGE", "UPLOAD_PATH_PDF"):
+for path_key in ("UPLOAD_ROOT", "UPLOAD_PATH_IMAGE", "UPLOAD_PATH_PDF", "PDF_CACHE_DIR"):
     os.makedirs(app.config[path_key], exist_ok=True)
 
 
@@ -54,6 +56,7 @@ login_manager.init_app(app)
 login_manager.login_view = "login"
 migrate = Migrate(app, db)
 csrf = CSRFProtect(app)
+cache = Cache(app)
 
 
 @app.before_request

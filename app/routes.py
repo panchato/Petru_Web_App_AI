@@ -5,7 +5,7 @@ from urllib.parse import urlparse, urljoin
 from flask_login import login_user, logout_user, login_required, current_user
 from app.forms import LoginForm, AddUserForm, EditUserForm, AddRoleForm, AddAreaForm, AssignRoleForm, AssignAreaForm, AddClientForm, AddGrowerForm, AddVarietyForm, AddRawMaterialPackagingForm, CreateRawMaterialReceptionForm, CreateLotForm, FullTruckWeightForm, LotQCForm, SampleQCForm, FumigationForm, StartFumigationForm, CompleteFumigationForm
 from app.models import User, Role, Area, Client, Grower, Variety, RawMaterialPackaging, RawMaterialReception, Lot, LotQC, SampleQC, Fumigation
-from app import app, db, bcrypt
+from app import app, db, bcrypt, cache
 from app.upload_security import UploadValidationError, resolve_upload_path, save_uploaded_file
 from app.permissions import (
     admin_required,
@@ -17,11 +17,14 @@ from app.permissions import (
 )
 from app.services import (
     FumigationService,
-    FumigationTransitionError,
     LotService,
     LotValidationError,
     QCService,
     QCValidationError,
+    can_transition,
+    get_cached_pdf,
+    save_pdf_to_cache,
+    invalidate_cached_pdf,
 )
 from io import BytesIO
 from datetime import datetime, timezone, date, timedelta, time
@@ -300,6 +303,8 @@ def index():
 
 @app.route('/api/index/summary')
 @login_required
+# Cache dashboard summary per user; timeout is controlled by CACHE_TIMEOUT_DASHBOARD (default 60s) to reduce repeated polling queries.
+@cache.cached(timeout=None, key_prefix=lambda: f"api:index:summary:{current_user.get_id() or 'anon'}")
 def index_summary_api():
     if not can_view_operational_dashboard(current_user):
         return jsonify({"error": "forbidden"}), 403
@@ -314,6 +319,8 @@ def dashboard_tv():
 @app.route('/api/dashboard/summary')
 @login_required
 @dashboard_required
+# Cache dashboard TV summary per user; timeout is controlled by CACHE_TIMEOUT_DASHBOARD (default 60s) to reduce repeated polling queries.
+@cache.cached(timeout=None, key_prefix=lambda: f"api:dashboard:summary:{current_user.get_id() or 'anon'}")
 def dashboard_summary_api():
     return jsonify(_build_dashboard_summary())
 
@@ -767,7 +774,7 @@ def add_raw_material_packaging():
         return redirect(url_for('list_raw_material_packagings'))
     return render_template('add_raw_material_packaging.html', form=form)
 
-@app.route('/list_raw_material_packagins')
+@app.route('/list_raw_material_packagings')
 @login_required
 @admin_required
 def list_raw_material_packagings():
@@ -1009,6 +1016,7 @@ def register_full_truck_weight(lot_id):
             flash(str(exc), 'error')
             return render_template('register_full_truck_weight.html', form=form, lot=lot)
 
+        invalidate_cached_pdf("lot_labels", lot.id)
         flash(
             f'Peso de camión registrado. Peso neto calculado: {computation.net_weight:.2f} kg.',
             'success',
@@ -1035,6 +1043,7 @@ def update_lot_weight_inline(lot_id):
     except LotValidationError as exc:
         flash(str(exc), 'error')
     else:
+        invalidate_cached_pdf("lot_labels", lot.id)
         flash(
             f'Lote {lot.lot_number:03d} actualizado. Peso neto: {computation.net_weight:.2f} kg.',
             'success',
@@ -1051,9 +1060,9 @@ def generate_qr():
     # Receive the reception_id from the query parameters
     reception_id = request.args.get('reception_id', 'default')
 
-    # Dynamically generate the URL for 'lot_net_details' route
+    # Dynamically generate the URL for lot creation within an existing reception
     # _external=True generates an absolute URL, including the domain
-    url = url_for('lot_net_details', reception_id=reception_id, _external=True)
+    url = url_for('create_lot', reception_id=reception_id, _external=True)
     
     qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=4) # type: ignore
     qr.add_data(url)
@@ -1079,6 +1088,17 @@ def lot_labels_pdf(lot_id):
     reception = lot.raw_material_reception
     clients = reception.clients
     growers = reception.growers
+    lot_number = f"{lot.lot_number:03d}"
+    cache_key_updated_at = lot.updated_at or lot.created_at
+
+    cached_pdf = get_cached_pdf("lot_labels", lot.id, cache_key_updated_at)
+    if cached_pdf:
+        return send_file(
+            cached_pdf,
+            mimetype='application/pdf',
+            download_name=f'lot_labels_{lot_number}.pdf',
+            as_attachment=True,
+        )
 
     # QR data for the lot (can be adjusted later)
     qr_payload = f"LOT-{lot.lot_number:03d}"
@@ -1102,9 +1122,9 @@ def lot_labels_pdf(lot_id):
         labels=labels,
     )
     pdf = HTML(string=html, base_url=request.url_root).write_pdf()
-    lot_number = f"{lot.lot_number:03d}"
+    cached_pdf = save_pdf_to_cache("lot_labels", lot.id, cache_key_updated_at, pdf)
     return send_file(
-        BytesIO(pdf),
+        cached_pdf,
         mimetype='application/pdf',
         download_name=f'lot_labels_{lot_number}.pdf',
         as_attachment=True,
@@ -1136,7 +1156,7 @@ def create_lot_qc():
             return render_template('create_lot_qc.html', form=form)
 
         try:
-            QCService.create_lot_qc(
+            lot_qc = QCService.create_lot_qc(
                 payload=payload,
                 inshell_image_path=inshell_image_path,
                 shelled_image_path=shelled_image_path,
@@ -1145,6 +1165,8 @@ def create_lot_qc():
             flash(str(exc), 'error')
             return render_template('create_lot_qc.html', form=form)
 
+        invalidate_cached_pdf("lot_qc_report", lot_qc.id)
+        invalidate_cached_pdf("lot_labels", payload["lot_id"])
         flash('Registro de QC de lote creado exitosamente.', 'success')
 
         return redirect(url_for('index'))
@@ -1183,7 +1205,7 @@ def create_sample_qc():
             return render_template('create_sample_qc.html', form=form)
 
         try:
-            QCService.create_sample_qc(
+            sample_qc = QCService.create_sample_qc(
                 payload=payload,
                 inshell_image_path=inshell_image_path,
                 shelled_image_path=shelled_image_path,
@@ -1192,6 +1214,7 @@ def create_sample_qc():
             flash(str(exc), 'error')
             return render_template('create_sample_qc.html', form=form)
 
+        invalidate_cached_pdf("sample_qc_report", sample_qc.id)
         return redirect(url_for('index'))
     else:
         for fieldName, errorMessages in form.errors.items():
@@ -1260,6 +1283,17 @@ def view_lot_qc_report_pdf(report_id):
     reception = lot.raw_material_reception
     clients = reception.clients
     growers = reception.growers
+    cache_key_updated_at = report.updated_at or report.created_at
+    lot_number = f"{report.lot_id:03d}"
+
+    cached_pdf = get_cached_pdf("lot_qc_report", report.id, cache_key_updated_at)
+    if cached_pdf:
+        return send_file(
+            cached_pdf,
+            mimetype='application/pdf',
+            download_name=f'lot_qc_report_{lot_number}.pdf',
+            as_attachment=True,
+        )
 
     inshell_image_url = _upload_path_to_file_uri(report.inshell_image_path)
     shelled_image_url = _upload_path_to_file_uri(report.shelled_image_path)
@@ -1274,9 +1308,9 @@ def view_lot_qc_report_pdf(report_id):
         shelled_image_url=shelled_image_url,
     )
     pdf = HTML(string=html, base_url=request.url_root).write_pdf()
-    lot_number = f"{report.lot_id:03d}"
+    cached_pdf = save_pdf_to_cache("lot_qc_report", report.id, cache_key_updated_at, pdf)
     return send_file(
-        BytesIO(pdf),
+        cached_pdf,
         mimetype='application/pdf',
         download_name=f'lot_qc_report_{lot_number}.pdf',
         as_attachment=True,
@@ -1308,6 +1342,16 @@ def view_sample_qc_report_image(report_id, image_kind):
 @area_role_required('Calidad', ['Contribuidor', 'Lector'])
 def view_sample_qc_report_pdf(report_id):
     report = SampleQC.query.get_or_404(report_id)
+    cache_key_updated_at = report.updated_at or report.created_at
+
+    cached_pdf = get_cached_pdf("sample_qc_report", report.id, cache_key_updated_at)
+    if cached_pdf:
+        return send_file(
+            cached_pdf,
+            mimetype='application/pdf',
+            download_name=f'sample_qc_report_{report_id}.pdf',
+            as_attachment=True,
+        )
 
     inshell_image_url = _upload_path_to_file_uri(report.inshell_image_path)
     shelled_image_url = _upload_path_to_file_uri(report.shelled_image_path)
@@ -1319,8 +1363,9 @@ def view_sample_qc_report_pdf(report_id):
         shelled_image_url=shelled_image_url,
     )
     pdf = HTML(string=html, base_url=request.url_root).write_pdf()
+    cached_pdf = save_pdf_to_cache("sample_qc_report", report.id, cache_key_updated_at, pdf)
     return send_file(
-        BytesIO(pdf),
+        cached_pdf,
         mimetype='application/pdf',
         download_name=f'sample_qc_report_{report_id}.pdf',
         as_attachment=True,
@@ -1338,8 +1383,8 @@ def create_fumigation():
                 work_order=form.work_order.data,
                 lot_ids=form.lot_selection.data,
             )
-        except FumigationTransitionError as exc:
-            flash(str(exc), 'warning')
+        except ValueError as exc:
+            flash(str(exc), 'error')
             return render_template('create_fumigation.html', form=form)
         flash('Fumigación creada con éxito.', 'success')
         return redirect(url_for('list_fumigations'))
@@ -1433,14 +1478,16 @@ def view_fumigation_document(fumigation_id, document_kind):
 def start_fumigation(fumigation_id):
     fumigation = Fumigation.query.get_or_404(fumigation_id)
     form = StartFumigationForm()
-
     if fumigation.real_end_date is not None:
-        flash('Esta fumigación ya fue completada.', 'warning')
+        flash("Esta fumigación ya fue completada.", 'error')
         return redirect(url_for('list_fumigations'))
-
-    if any(lot.fumigation_status != FumigationService.ASSIGNED for lot in fumigation.lots):
-        flash('Uno o más lotes no se encuentran en estado "Asignado a Fumigación".', 'warning')
-        return redirect(url_for('list_fumigations'))
+    for lot in fumigation.lots:
+        if not can_transition(lot, FumigationService.STARTED):
+            flash(
+                f'Lote {lot.lot_number} no puede pasar de estado {lot.fumigation_status} a {FumigationService.STARTED}.',
+                'error',
+            )
+            return redirect(url_for('list_fumigations'))
 
     if form.validate_on_submit():
         try:
@@ -1457,8 +1504,8 @@ def start_fumigation(fumigation_id):
                 fumigation_sign_path=fumigation_sign_path,
                 work_order_path=work_order_path,
             )
-        except FumigationTransitionError as exc:
-            flash(str(exc), 'warning')
+        except ValueError as exc:
+            flash(str(exc), 'error')
             return redirect(url_for('list_fumigations'))
         flash('Fumigación iniciada con éxito.', 'success')
         return redirect(url_for('list_fumigations'))
@@ -1471,14 +1518,16 @@ def start_fumigation(fumigation_id):
 def complete_fumigation(fumigation_id):
     fumigation = Fumigation.query.get_or_404(fumigation_id)
     form = CompleteFumigationForm()
-
     if fumigation.real_end_date is not None:
-        flash('Esta fumigación ya fue completada.', 'warning')
+        flash("Esta fumigación ya fue completada.", 'error')
         return redirect(url_for('list_fumigations'))
-
-    if any(lot.fumigation_status != FumigationService.STARTED for lot in fumigation.lots):
-        flash('Uno o más lotes no se encuentran en estado "En Fumigación".', 'warning')
-        return redirect(url_for('list_fumigations'))
+    for lot in fumigation.lots:
+        if not can_transition(lot, FumigationService.COMPLETED):
+            flash(
+                f'Lote {lot.lot_number} no puede pasar de estado {lot.fumigation_status} a {FumigationService.COMPLETED}.',
+                'error',
+            )
+            return redirect(url_for('list_fumigations'))
 
     if form.validate_on_submit():
         try:
@@ -1493,8 +1542,8 @@ def complete_fumigation(fumigation_id):
                 real_end_time=form.real_end_time.data,
                 certificate_path=certificate_path,
             )
-        except FumigationTransitionError as exc:
-            flash(str(exc), 'warning')
+        except ValueError as exc:
+            flash(str(exc), 'error')
             return redirect(url_for('list_fumigations'))
         flash('Fumigación completada con éxito.', 'success')
         return redirect(url_for('list_fumigations'))

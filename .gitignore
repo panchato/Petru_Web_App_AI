@@ -59,7 +59,6 @@ cover/
 *.pot
 
 # Flask stuff:
-migrations/
 .webassets-cache
 
 # pdm
@@ -79,6 +78,7 @@ venv/
 # App uploads/static assets
 app/static/images/
 app/static/pdf/
+app/static/pdf_cache/
 
 # Local-only files
 app/instance/*.db

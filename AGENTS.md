@@ -40,7 +40,7 @@
   - `yieldpercentage = round((shelled_weight / inshell_weight) * 100, 2)`
 - Fumigation state machine (`Lot.fumigation_status`):
   - `1` available -> `2` assigned -> `3` started -> `4` completed
-  - Enforce valid transitions in routes.
+  - Fumigation state machine lives in `app/services/fumigation_service.py`. Use `can_transition(lot, new_state)` for prechecks in routes, and `transition_fumigation_status(lot, new_state)` for the actual transition inside service methods. To add or change valid transitions, update `VALID_TRANSITIONS` only.
 
 ## Route Map
 - Auth: `/login`, `/logout`
@@ -68,8 +68,6 @@
 
 ## Security & Configuration Tips
 - Set `SECRET_KEY` and `DATABASE_URL` via environment variables for non-local use.
+- For dashboard cache scaling beyond one Gunicorn worker, set `CACHE_TYPE=RedisCache` and `CACHE_REDIS_URL` in environment variables.
 - Do not commit credentials, tokens, or production data.
 
-## Known Issues
-- `/generate_qr` references `lot_net_details`, which does not exist.
-- Route path typo: `/list_raw_material_packagins` (missing `g`).
