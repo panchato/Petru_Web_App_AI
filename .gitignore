@@ -88,3 +88,6 @@ PROJECT_NOTES.md
 
 # Codex README
 AGENTS.md
+
+tests/*.sqlite3
+tests/*.sqlite3-*
