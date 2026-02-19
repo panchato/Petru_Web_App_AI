@@ -119,6 +119,21 @@
                             </ul>
                     </li>
                     {% endif %}
+                    {% if current_user.is_authenticated and current_user.is_active and not current_user.is_external and (current_user.has_role('Admin') or current_user.from_area('Materia Prima')) %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Fumigación
+                        </a>
+                            <ul class="dropdown-menu">
+                                {% if current_user.has_role('Admin') or (current_user.from_area('Materia Prima') and current_user.has_role('Contribuidor')) %}
+                                <li><a class="dropdown-item" href="{{ url_for('create_fumigation') }}">Crear Fumigación</a></li>
+                                {% endif %}
+                                {% if current_user.has_role('Admin') or (current_user.from_area('Materia Prima') and (current_user.has_role('Contribuidor') or current_user.has_role('Lector'))) %}
+                                <li><a class="dropdown-item" href="{{ url_for('list_fumigations') }}">Listado de Fumigaciones</a></li>
+                                {% endif %}
+                            </ul>
+                    </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
