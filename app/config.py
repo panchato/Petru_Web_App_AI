@@ -9,7 +9,10 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SESSION_COOKIE_HTTPONLY = True
     PERMANENT_SESSION_LIFETIME = timedelta(hours=12)
+    
+    # SECURITY WARNING: Setup a proper SECRET_KEY in production!
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'very_secret_key'
+    
     UPLOAD_PATH_IMAGE = os.path.join(basedir, 'static', 'images')
     UPLOAD_PATH_PDF = os.path.join(basedir, 'static', 'pdf')
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}

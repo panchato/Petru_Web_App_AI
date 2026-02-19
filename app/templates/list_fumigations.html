@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+<h2>Listado de Fumigaciones</h2>
+<div class="table-responsive">
+<table class="table table-striped table-searchable">
+    <thead>
+        <tr>
+            <th>Orden de Trabajo</th>
+            <th>Lotes</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+            <th>Documentos</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for fumigation in fumigations %}
+        <tr>
+            <td>{{ fumigation.work_order }}</td>
+            <td>
+                {% for lot in fumigation.lots %}
+                    Lote {{ '{:03}'.format(lot.lot_number) }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </td>
+            <td>
+                {% if fumigation.real_end_date is not none %}
+                    <span class="badge fw-bold" style="background-color: #198754; color: white;">Finalizada</span>
+                {% elif fumigation.lots|selectattr('fumigation_status', 'equalto', '3')|list|length > 0 %}
+                    <span class="badge fw-bold" style="background-color: #000000; color: white;">En Fumigaci&oacute;n</span>
+                {% elif fumigation.lots|selectattr('fumigation_status', 'equalto', '2')|list|length > 0 %}
+                    <span class="badge fw-bold" style="background-color: #ffc107; color: white;">Asignada</span>
+                {% else %}
+                    <span class="badge fw-bold bg-secondary">Desconocido</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if fumigation.real_end_date is none and fumigation.lots|selectattr('fumigation_status', 'equalto', '2')|list|length > 0 %}
+                    <a href="{{ url_for('start_fumigation', fumigation_id=fumigation.id) }}" class="btn btn-sm" style="background-color: #ffc107; color: white;">Iniciar</a>
+                {% elif fumigation.lots|selectattr('fumigation_status', 'equalto', '3')|list|length > 0 %}
+                    <a href="{{ url_for('complete_fumigation', fumigation_id=fumigation.id) }}" class="btn btn-sm" style="background-color: #000000; color: white;">Completar</a>
+                {% endif %}
+            </td>
+            <td>
+                {% if fumigation.lots|selectattr('fumigation_status', 'equalto', '3')|list|length > 0 %}
+                    {% if fumigation.fumigation_sign_path %}
+                        <a href="{{ url_for('static', filename=fumigation.fumigation_sign_path) }}" target="_blank" class="btn btn-outline-dark btn-sm">Cartel</a>
+                    {% endif %}
+                    {% if fumigation.work_order_path %}
+                        <a href="{{ url_for('static', filename=fumigation.work_order_path) }}" target="_blank" class="btn btn-outline-dark btn-sm">OT</a>
+                    {% endif %}
+                {% elif fumigation.real_end_date is not none %}
+                    {% if fumigation.fumigation_sign_path %}
+                        <a href="{{ url_for('static', filename=fumigation.fumigation_sign_path) }}" target="_blank" class="btn btn-outline-success btn-sm">Cartel</a>
+                    {% endif %}
+                    {% if fumigation.work_order_path %}
+                        <a href="{{ url_for('static', filename=fumigation.work_order_path) }}" target="_blank" class="btn btn-outline-success btn-sm">OT</a>
+                    {% endif %}
+                    {% if fumigation.certificate_path %}
+                        <a href="{{ url_for('static', filename=fumigation.certificate_path) }}" target="_blank" class="btn btn-outline-success btn-sm">Certificado</a>
+                    {% endif %}
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5">No se encontraron fumigaciones en la base de datos.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+</div>
+{% endblock %}
