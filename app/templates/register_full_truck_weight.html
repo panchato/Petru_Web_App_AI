@@ -6,7 +6,7 @@
         <p class="subtle">Lote {{ '%03d' % lot.lot_number }}</p>
     </div>
     <div class="page-actions">
-        <a href="{{ url_for('list_lots') }}" class="btn btn-outline-secondary">Volver a lotes</a>
+        <a href="{{ url_for('materiaprima.list_lots') }}" class="btn btn-outline-secondary">Volver a lotes</a>
     </div>
 </div>
 <div class="form-section">
@@ -39,7 +39,7 @@
         </div>
         <div class="page-actions mt-4">
             {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('list_lots') }}" class="btn btn-outline-secondary">Cancelar</a>
+            <a href="{{ url_for('materiaprima.list_lots') }}" class="btn btn-outline-secondary">Cancelar</a>
         </div>
     </form>
 </div>

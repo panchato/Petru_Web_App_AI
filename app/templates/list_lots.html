@@ -6,8 +6,8 @@
         <p class="subtle">Consulta estado, peso y documentos asociados.</p>
     </div>
     <div class="page-actions">
-        <a href="{{ url_for('create_raw_material_reception') }}" class="btn btn-primary">Crear recepci&oacute;n</a>
-        <a href="{{ url_for('list_rmrs') }}" class="btn btn-outline-secondary">Ver recepciones</a>
+        <a href="{{ url_for('materiaprima.create_raw_material_reception') }}" class="btn btn-primary">Crear recepci&oacute;n</a>
+        <a href="{{ url_for('materiaprima.list_rmrs') }}" class="btn btn-outline-secondary">Ver recepciones</a>
     </div>
 </div>
 
@@ -24,12 +24,12 @@
 <div class="alert alert-warning d-flex flex-wrap justify-content-between align-items-center">
     <div>Filtro operacional activo: {{ active_alert.label }}</div>
     <div class="page-actions">
-        <a href="{{ url_for('list_lots') }}" class="btn btn-outline-secondary btn-sm">Quitar filtro</a>
+        <a href="{{ url_for('materiaprima.list_lots') }}" class="btn btn-outline-secondary btn-sm">Quitar filtro</a>
     </div>
 </div>
 {% endif %}
 
-<form class="filters" method="GET" action="{{ url_for('list_lots') }}" aria-label="Filtros r&aacute;pidos de lotes">
+<form class="filters" method="GET" action="{{ url_for('materiaprima.list_lots') }}" aria-label="Filtros r&aacute;pidos de lotes">
     {% if active_alert %}
     <input type="hidden" name="alert" value="{{ active_alert.key }}">
     {% endif %}
@@ -75,7 +75,7 @@
         <button type="submit" class="btn btn-primary">Aplicar</button>
     </div>
     <div>
-        <a class="btn btn-outline-secondary" href="{{ url_for('list_lots', alert=active_alert.key if active_alert else None, labels_url=labels_url if labels_url else None) }}">Limpiar</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('materiaprima.list_lots', alert=active_alert.key if active_alert else None, labels_url=labels_url if labels_url else None) }}">Limpiar</a>
     </div>
 </form>
 
@@ -140,8 +140,8 @@
                 </td>
                 <td class="actions">
                     {% if (lot.net_weight is none or lot.net_weight == 0) and (current_user.has_role('Admin') or (current_user.from_area('Materia Prima') and current_user.has_role('Contribuidor'))) %}
-                    {% set next_url = url_for('list_lots') + ('?' + current_query_string if current_query_string else '') %}
-                    <form method="POST" action="{{ url_for('update_lot_weight_inline', lot_id=lot.id) }}" class="inline-weight-form">
+                    {% set next_url = url_for('materiaprima.list_lots') + ('?' + current_query_string if current_query_string else '') %}
+                    <form method="POST" action="{{ url_for('materiaprima.update_lot_weight_inline', lot_id=lot.id) }}" class="inline-weight-form">
                         {{ csrf_form.hidden_tag() }}
                         <input type="hidden" name="next" value="{{ next_url }}">
                         <div class="inline-weight-grid">
@@ -152,7 +152,7 @@
                         <button type="submit" class="btn btn-sm btn-primary mt-2">Guardar peso</button>
                     </form>
                     {% endif %}
-                    <a href="{{ url_for('lot_labels_pdf', lot_id=lot.id) }}" class="btn btn-sm btn-outline-secondary" target="_blank">Etiquetas</a>
+                    <a href="{{ url_for('materiaprima.lot_labels_pdf', lot_id=lot.id) }}" class="btn btn-sm btn-outline-secondary" target="_blank">Etiquetas</a>
                 </td>
             </tr>
             {% else %}
@@ -160,7 +160,7 @@
                 <td colspan="7">
                     <div class="empty-state">
                         <div>No se encontraron lotes en la base de datos.</div>
-                        <a href="{{ url_for('create_raw_material_reception') }}" class="btn btn-primary btn-sm">Crear recepci&oacute;n</a>
+                        <a href="{{ url_for('materiaprima.create_raw_material_reception') }}" class="btn btn-primary btn-sm">Crear recepci&oacute;n</a>
                     </div>
                 </td>
             </tr>

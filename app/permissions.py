@@ -46,7 +46,7 @@ def admin_required(f):
     def wrapper(*args, **kwargs):
         if not is_admin(current_user):
             flash("Acceso restringido.", "error")
-            return redirect(url_for("index"))
+            return redirect(url_for("dashboard.index"))
         return f(*args, **kwargs)
 
     return wrapper
@@ -58,10 +58,10 @@ def area_role_required(area_name, roles):
         def wrapper(*args, **kwargs):
             if not current_user.is_authenticated:
                 flash("Acceso restringido.", "error")
-                return redirect(url_for("login"))
+                return redirect(url_for("auth.login"))
             if not has_area_role(current_user, area_name, roles):
                 flash("Acceso restringido.", "error")
-                return redirect(url_for("index"))
+                return redirect(url_for("dashboard.index"))
             return f(*args, **kwargs)
 
         return wrapper
@@ -74,10 +74,10 @@ def dashboard_required(f):
     def wrapper(*args, **kwargs):
         if not current_user.is_authenticated:
             flash("Acceso restringido.", "error")
-            return redirect(url_for("login"))
+            return redirect(url_for("auth.login"))
         if current_user.has_role("Admin") or current_user.has_role("Dashboard"):
             return f(*args, **kwargs)
         flash("Acceso restringido.", "error")
-        return redirect(url_for("index"))
+        return redirect(url_for("dashboard.index"))
 
     return wrapper

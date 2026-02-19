@@ -7,8 +7,8 @@
         <p class="subtle">Consulta resultados y descarga el PDF del an&aacute;lisis.</p>
     </div>
     <div class="page-actions">
-        <a href="{{ url_for('create_lot_qc') }}" class="btn btn-primary">Crear QC lote</a>
-        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Inicio</a>
+        <a href="{{ url_for('qc.create_lot_qc') }}" class="btn btn-primary">Crear QC lote</a>
+        <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary">Inicio</a>
     </div>
 </div>
 
@@ -29,8 +29,8 @@
                 <td>{{ record.date.strftime('%Y-%m-%d') }}</td>
                 <td>{{ record.analyst }}</td>
                 <td class="actions">
-                    <a href="{{ url_for('view_lot_qc_report', report_id=record.id) }}" class="btn btn-primary btn-sm">Ver</a>
-                    <a href="{{ url_for('view_lot_qc_report_pdf', report_id=record.id) }}" class="btn btn-outline-secondary btn-sm" target="_blank">PDF</a>
+                    <a href="{{ url_for('qc.view_lot_qc_report', report_id=record.id) }}" class="btn btn-primary btn-sm">Ver</a>
+                    <a href="{{ url_for('qc.view_lot_qc_report_pdf', report_id=record.id) }}" class="btn btn-outline-secondary btn-sm" target="_blank">PDF</a>
                 </td>
             </tr>
             {% else %}
@@ -38,7 +38,7 @@
                 <td colspan="4">
                     <div class="empty-state">
                         <div>No se encontraron an&aacute;lisis de calidad en la base de datos.</div>
-                        <a href="{{ url_for('create_lot_qc') }}" class="btn btn-primary btn-sm">Crear QC lote</a>
+                        <a href="{{ url_for('qc.create_lot_qc') }}" class="btn btn-primary btn-sm">Crear QC lote</a>
                     </div>
                 </td>
             </tr>

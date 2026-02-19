@@ -3,7 +3,7 @@
 {% block content %}
     <div class="container text-center">
         <h2>Control de Calidad de Lote Nº {{ '%03d' % report.lot_id }}</h2>
-        <a href="{{ url_for('view_lot_qc_report_pdf', report_id=report.id) }}" class="btn btn-outline-secondary btn-sm mt-2">
+        <a href="{{ url_for('qc.view_lot_qc_report_pdf', report_id=report.id) }}" class="btn btn-outline-secondary btn-sm mt-2">
             Descargar PDF
         </a>
     </div>
@@ -237,12 +237,12 @@
         <div class="row justify-content-center g-3">
             {% if report.inshell_image_path %}
             <div class="col-12 col-md-6">
-                <img src="{{ url_for('view_lot_qc_report_image', report_id=report.id, image_kind='inshell') }}" alt="Inshell Image" class="img-fluid">
+                <img src="{{ url_for('qc.view_lot_qc_report_image', report_id=report.id, image_kind='inshell') }}" alt="Inshell Image" class="img-fluid">
             </div>
             {% endif %}
             {% if report.shelled_image_path %}
             <div class="col-12 col-md-6">
-                <img src="{{ url_for('view_lot_qc_report_image', report_id=report.id, image_kind='shelled') }}" alt="Shelled Image" class="img-fluid">
+                <img src="{{ url_for('qc.view_lot_qc_report_image', report_id=report.id, image_kind='shelled') }}" alt="Shelled Image" class="img-fluid">
             </div>
             {% endif %}
         </div>

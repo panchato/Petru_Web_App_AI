@@ -6,7 +6,7 @@
         <p class="subtle">Gestiona variedades disponibles.</p>
     </div>
     <div class="page-actions">
-        <a href="{{ url_for('add_variety') }}" class="btn btn-primary">Agregar variedad</a>
+        <a href="{{ url_for('admin.add_variety') }}" class="btn btn-primary">Agregar variedad</a>
     </div>
 </div>
 
@@ -25,7 +25,7 @@
                 <th scope="row">{{ loop.index }}</th>
                 <td>{{ variety.name }}</td>
                 <td class="actions">
-                    <a href="{{ url_for('edit_variety', variety_id=variety.id) }}" class="btn btn-outline-secondary btn-sm">Editar</a>
+                    <a href="{{ url_for('admin.edit_variety', variety_id=variety.id) }}" class="btn btn-outline-secondary btn-sm">Editar</a>
                 </td>
             </tr>
             {% else %}
@@ -33,7 +33,7 @@
                 <td colspan="3">
                     <div class="empty-state">
                         <div>No se encontraron variedades en la base de datos.</div>
-                        <a href="{{ url_for('add_variety') }}" class="btn btn-primary btn-sm">Agregar variedad</a>
+                        <a href="{{ url_for('admin.add_variety') }}" class="btn btn-primary btn-sm">Agregar variedad</a>
                     </div>
                 </td>
             </tr>

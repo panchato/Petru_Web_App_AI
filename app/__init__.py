@@ -1,7 +1,7 @@
 import os
 import uuid
 import logging
-from flask import Flask
+from flask import Flask, render_template
 from flask import abort, request, g, has_request_context
 from app.config import Config
 from flask_sqlalchemy import SQLAlchemy
@@ -53,10 +53,41 @@ db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.init_app(app)
-login_manager.login_view = "login"
+login_manager.login_view = "auth.login"
 migrate = Migrate(app, db)
 csrf = CSRFProtect(app)
 cache = Cache(app)
+
+
+def _handle_403(_error):
+    return render_template('errors/403.html'), 403
+
+
+def _handle_404(_error):
+    return render_template('errors/404.html'), 404
+
+
+def _handle_500(_error):
+    db.session.rollback()
+    return render_template('errors/500.html'), 500
+
+from app.blueprints.auth import bp as auth_bp
+from app.blueprints.admin import bp as admin_bp
+from app.blueprints.materiaprima import bp as materiaprima_bp
+from app.blueprints.qc import bp as qc_bp
+from app.blueprints.fumigation import bp as fumigation_bp
+from app.blueprints.dashboard import bp as dashboard_bp
+
+app.register_blueprint(auth_bp)
+app.register_blueprint(admin_bp)
+app.register_blueprint(materiaprima_bp)
+app.register_blueprint(qc_bp)
+app.register_blueprint(fumigation_bp)
+app.register_blueprint(dashboard_bp)
+
+app.register_error_handler(403, _handle_403)
+app.register_error_handler(404, _handle_404)
+app.register_error_handler(500, _handle_500)
 
 
 @app.before_request
@@ -91,4 +122,4 @@ def _log_response(response):
 def _touch_dashboard_version(_session):
     app.config["DASHBOARD_LAST_COMMIT_AT"] = datetime.now(timezone.utc).isoformat()
 
-from app import routes, models
+from app import models

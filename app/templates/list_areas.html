@@ -6,7 +6,7 @@
         <p class="subtle">Define &aacute;reas operativas.</p>
     </div>
     <div class="page-actions">
-        <a href="{{ url_for('add_area') }}" class="btn btn-primary">Agregar &aacute;rea</a>
+        <a href="{{ url_for('admin.add_area') }}" class="btn btn-primary">Agregar &aacute;rea</a>
     </div>
 </div>
 
@@ -27,7 +27,7 @@
                 <td>{{ area.name }}</td>
                 <td>{{ area.description }}</td>
                 <td class="actions">
-                    <a href="{{ url_for('edit_area', area_id=area.id) }}" class="btn btn-outline-secondary btn-sm">Editar</a>
+                    <a href="{{ url_for('admin.edit_area', area_id=area.id) }}" class="btn btn-outline-secondary btn-sm">Editar</a>
                 </td>
             </tr>
             {% else %}
@@ -35,7 +35,7 @@
                 <td colspan="4">
                     <div class="empty-state">
                         <div>No se encontraron &aacute;reas en la base de datos.</div>
-                        <a href="{{ url_for('add_area') }}" class="btn btn-primary btn-sm">Agregar &aacute;rea</a>
+                        <a href="{{ url_for('admin.add_area') }}" class="btn btn-primary btn-sm">Agregar &aacute;rea</a>
                     </div>
                 </td>
             </tr>

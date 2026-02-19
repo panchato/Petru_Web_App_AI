@@ -6,7 +6,7 @@
         <p class="subtle">Relaciona usuarios con &aacute;reas de trabajo.</p>
     </div>
     <div class="page-actions">
-        <a href="{{ url_for('list_users') }}" class="btn btn-outline-secondary">Volver a usuarios</a>
+        <a href="{{ url_for('admin.list_users') }}" class="btn btn-outline-secondary">Volver a usuarios</a>
     </div>
 </div>
 
@@ -31,7 +31,7 @@
         </div>
         <div class="page-actions mt-4">
             {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('list_users') }}" class="btn btn-outline-secondary">Cancelar</a>
+            <a href="{{ url_for('admin.list_users') }}" class="btn btn-outline-secondary">Cancelar</a>
         </div>
     </form>
 </div>

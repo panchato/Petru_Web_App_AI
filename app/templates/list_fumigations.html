@@ -7,12 +7,12 @@
         <p class="subtle">Controla el estado, documentos y pr&oacute;ximas acciones.</p>
     </div>
     <div class="page-actions">
-        <a href="{{ url_for('create_fumigation') }}" class="btn btn-primary">Crear fumigaci&oacute;n</a>
-        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Inicio</a>
+        <a href="{{ url_for('fumigation.create_fumigation') }}" class="btn btn-primary">Crear fumigaci&oacute;n</a>
+        <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary">Inicio</a>
     </div>
 </div>
 
-<form class="filters" method="GET" action="{{ url_for('list_fumigations') }}" aria-label="Filtros r&aacute;pidos de fumigaciones">
+<form class="filters" method="GET" action="{{ url_for('fumigation.list_fumigations') }}" aria-label="Filtros r&aacute;pidos de fumigaciones">
     <div>
         <label class="form-label">Estado</label>
         <select class="form-select" name="status">
@@ -47,7 +47,7 @@
         <button type="submit" class="btn btn-primary">Aplicar</button>
     </div>
     <div>
-        <a class="btn btn-outline-secondary" href="{{ url_for('list_fumigations') }}">Limpiar</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('fumigation.list_fumigations') }}">Limpiar</a>
     </div>
 </form>
 
@@ -91,28 +91,28 @@
             </td>
             <td>
                 {% if fumigation.real_end_date is none and fumigation.lots|selectattr('fumigation_status', 'equalto', '2')|list|length > 0 %}
-                    <a href="{{ url_for('start_fumigation', fumigation_id=fumigation.id) }}" class="btn btn-sm btn-primary">Iniciar</a>
+                    <a href="{{ url_for('fumigation.start_fumigation', fumigation_id=fumigation.id) }}" class="btn btn-sm btn-primary">Iniciar</a>
                 {% elif fumigation.lots|selectattr('fumigation_status', 'equalto', '3')|list|length > 0 %}
-                    <a href="{{ url_for('complete_fumigation', fumigation_id=fumigation.id) }}" class="btn btn-sm btn-primary">Completar</a>
+                    <a href="{{ url_for('fumigation.complete_fumigation', fumigation_id=fumigation.id) }}" class="btn btn-sm btn-primary">Completar</a>
                 {% endif %}
             </td>
             <td>
                 {% if fumigation.lots|selectattr('fumigation_status', 'equalto', '3')|list|length > 0 %}
                     {% if fumigation.fumigation_sign_path %}
-                        <a href="{{ url_for('view_fumigation_document', fumigation_id=fumigation.id, document_kind='sign') }}" target="_blank" class="btn btn-outline-dark btn-sm">Cartel</a>
+                        <a href="{{ url_for('fumigation.view_fumigation_document', fumigation_id=fumigation.id, document_kind='sign') }}" target="_blank" class="btn btn-outline-dark btn-sm">Cartel</a>
                     {% endif %}
                     {% if fumigation.work_order_path %}
-                        <a href="{{ url_for('view_fumigation_document', fumigation_id=fumigation.id, document_kind='work_order') }}" target="_blank" class="btn btn-outline-dark btn-sm">OT</a>
+                        <a href="{{ url_for('fumigation.view_fumigation_document', fumigation_id=fumigation.id, document_kind='work_order') }}" target="_blank" class="btn btn-outline-dark btn-sm">OT</a>
                     {% endif %}
                 {% elif fumigation.real_end_date is not none %}
                     {% if fumigation.fumigation_sign_path %}
-                        <a href="{{ url_for('view_fumigation_document', fumigation_id=fumigation.id, document_kind='sign') }}" target="_blank" class="btn btn-outline-success btn-sm">Cartel</a>
+                        <a href="{{ url_for('fumigation.view_fumigation_document', fumigation_id=fumigation.id, document_kind='sign') }}" target="_blank" class="btn btn-outline-success btn-sm">Cartel</a>
                     {% endif %}
                     {% if fumigation.work_order_path %}
-                        <a href="{{ url_for('view_fumigation_document', fumigation_id=fumigation.id, document_kind='work_order') }}" target="_blank" class="btn btn-outline-success btn-sm">OT</a>
+                        <a href="{{ url_for('fumigation.view_fumigation_document', fumigation_id=fumigation.id, document_kind='work_order') }}" target="_blank" class="btn btn-outline-success btn-sm">OT</a>
                     {% endif %}
                     {% if fumigation.certificate_path %}
-                        <a href="{{ url_for('view_fumigation_document', fumigation_id=fumigation.id, document_kind='certificate') }}" target="_blank" class="btn btn-outline-success btn-sm">Certificado</a>
+                        <a href="{{ url_for('fumigation.view_fumigation_document', fumigation_id=fumigation.id, document_kind='certificate') }}" target="_blank" class="btn btn-outline-success btn-sm">Certificado</a>
                     {% endif %}
                 {% endif %}
             </td>
@@ -122,7 +122,7 @@
             <td colspan="5">
                 <div class="empty-state">
                     <div>No se encontraron fumigaciones en la base de datos.</div>
-                    <a href="{{ url_for('create_fumigation') }}" class="btn btn-primary btn-sm">Crear fumigaci&oacute;n</a>
+                    <a href="{{ url_for('fumigation.create_fumigation') }}" class="btn btn-primary btn-sm">Crear fumigaci&oacute;n</a>
                 </div>
             </td>
         </tr>

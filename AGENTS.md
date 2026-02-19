@@ -23,8 +23,12 @@
   - Filters use `.filters` layout
 
 ## Architecture & Conventions
-- Access control decorators in `app/routes.py`:
+- Route modules live in `app/blueprints/<domain>/routes.py` (`auth`, `admin`, `materiaprima`, `qc`, `fumigation`, `dashboard`).
+- Endpoint names follow `blueprint_name.function_name` (for example, `dashboard.index`, `auth.login`, `materiaprima.list_lots`).
+- Access control decorators are defined in `app/permissions.py`:
   - `@admin_required`, `@area_role_required(area, roles)`, `@dashboard_required` (Admin bypass).
+- Shared HTTP utilities live in `app/http_helpers.py`.
+- Dashboard business logic helpers live in `app/blueprints/dashboard/services.py`.
 - SQLAlchemy 2.0: use `db.engine.connect()` + `text(...)`, avoid deprecated `db.engine.execute()`.
 - Forms with dynamic choices should populate `SelectField` options in `__init__`.
 - File uploads: store under `app/static/images/` or `app/static/pdf/` and normalize paths with `.replace('\\', '/')`.
@@ -43,11 +47,13 @@
   - Fumigation state machine lives in `app/services/fumigation_service.py`. Use `can_transition(lot, new_state)` for prechecks in routes, and `transition_fumigation_status(lot, new_state)` for the actual transition inside service methods. To add or change valid transitions, update `VALID_TRANSITIONS` only.
 
 ## Route Map
-- Auth: `/login`, `/logout`
-- Admin CRUD: `/add_*`, `/list_*`, `/edit_*`, `/toggle_*`, `/assign_*`
-- Raw material: `/create_raw_material_reception`, `/create_lot/<id>`, `/list_rmrs`, `/list_lots`, `/register_full_truck_weight/<id>`, `/lots/<id>/labels.pdf`
-- QC: `/create_lot_qc`, `/create_sample_qc`, `/list_lot_qc_reports`, `/list_sample_qc_reports`, detail pages + `/pdf`
-- Fumigation: `/create_fumigation`, `/list_fumigations`, `/start_fumigation/<id>`, `/complete_fumigation/<id>`
+- `auth`: `app/blueprints/auth/routes.py`
+- `admin`: `app/blueprints/admin/routes.py`
+- `materiaprima`: `app/blueprints/materiaprima/routes.py`
+- `qc`: `app/blueprints/qc/routes.py`
+- `fumigation`: `app/blueprints/fumigation/routes.py`
+- `dashboard`: `app/blueprints/dashboard/routes.py`
+- Endpoint convention: use `blueprint_name.function_name` in `url_for(...)`.
 
 ## Change Checklist
 - Keep model/form/template/route fields aligned for every behavior change.

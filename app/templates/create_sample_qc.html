@@ -61,7 +61,7 @@
         <p class="subtle">Registra los datos de la muestra y valida los totales calculados.</p>
     </div>
     <div class="page-actions">
-        <a href="{{ url_for('list_sample_qc_reports') }}" class="btn btn-outline-secondary">Volver al listado</a>
+        <a href="{{ url_for('qc.list_sample_qc_reports') }}" class="btn btn-outline-secondary">Volver al listado</a>
     </div>
 </div>
 
@@ -269,7 +269,7 @@
 
     <div class="page-actions">
         {{ form.submit(class="btn btn-primary") }}
-        <a href="{{ url_for('list_sample_qc_reports') }}" class="btn btn-outline-secondary">Cancelar</a>
+        <a href="{{ url_for('qc.list_sample_qc_reports') }}" class="btn btn-outline-secondary">Cancelar</a>
     </div>
 </form>
 {% endblock %}

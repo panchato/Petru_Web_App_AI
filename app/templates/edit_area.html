@@ -6,7 +6,7 @@
         <p class="subtle">Actualiza la informaci&oacute;n del &aacute;rea.</p>
     </div>
     <div class="page-actions">
-        <a href="{{ url_for('list_areas') }}" class="btn btn-outline-secondary">Volver al listado</a>
+        <a href="{{ url_for('admin.list_areas') }}" class="btn btn-outline-secondary">Volver al listado</a>
     </div>
 </div>
 <div class="form-section">
@@ -30,7 +30,7 @@
         </div>
         <div class="page-actions mt-4">
             {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('list_areas') }}" class="btn btn-outline-secondary">Cancelar</a>
+            <a href="{{ url_for('admin.list_areas') }}" class="btn btn-outline-secondary">Cancelar</a>
         </div>
     </form>
 </div>

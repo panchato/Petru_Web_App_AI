@@ -6,7 +6,7 @@
         <p class="subtle">Define permisos y responsabilidades.</p>
     </div>
     <div class="page-actions">
-        <a href="{{ url_for('add_role') }}" class="btn btn-primary">Agregar rol</a>
+        <a href="{{ url_for('admin.add_role') }}" class="btn btn-primary">Agregar rol</a>
     </div>
 </div>
 
@@ -27,7 +27,7 @@
                 <td>{{ role.name }}</td>
                 <td>{{ role.description }}</td>
                 <td class="actions">
-                    <a href="{{ url_for('edit_role', role_id=role.id) }}" class="btn btn-outline-secondary btn-sm">Editar</a>
+                    <a href="{{ url_for('admin.edit_role', role_id=role.id) }}" class="btn btn-outline-secondary btn-sm">Editar</a>
                 </td>
             </tr>
             {% else %}
@@ -35,7 +35,7 @@
                 <td colspan="4">
                     <div class="empty-state">
                         <div>No se encontraron roles en la base de datos.</div>
-                        <a href="{{ url_for('add_role') }}" class="btn btn-primary btn-sm">Agregar rol</a>
+                        <a href="{{ url_for('admin.add_role') }}" class="btn btn-primary btn-sm">Agregar rol</a>
                     </div>
                 </td>
             </tr>

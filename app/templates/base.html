@@ -16,7 +16,7 @@
 <body>
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('index') }}">Inicio</a>
+            <a class="navbar-brand" href="{{ url_for('dashboard.index') }}">Inicio</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -28,8 +28,8 @@
                             Usuarios
                         </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('add_user') }}">Agregar Nuevo Usuario</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('list_users') }}">Listado de Usuarios</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.add_user') }}">Agregar Nuevo Usuario</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.list_users') }}">Listado de Usuarios</a></li>
                             </ul>
                     </li>
                     <li class="nav-item dropdown">
@@ -37,9 +37,9 @@
                             Roles
                         </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('add_role') }}">Agregar Nuevo Rol</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('list_roles') }}">Listado de Roles</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('assign_role') }}">Asignar Rol a Usuario</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.add_role') }}">Agregar Nuevo Rol</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.list_roles') }}">Listado de Roles</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.assign_role') }}">Asignar Rol a Usuario</a></li>
                             </ul>
                     </li>
                     <li class="nav-item dropdown">
@@ -47,9 +47,9 @@
                             Areas
                         </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('add_area') }}">Agregar Nueva Area</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('list_areas') }}">Listado de Areas</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('assign_area') }}">Asignar Area a Usuario</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.add_area') }}">Agregar Nueva Area</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.list_areas') }}">Listado de Areas</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.assign_area') }}">Asignar Area a Usuario</a></li>
                             </ul>
                     </li>
                     <li class="nav-item dropdown">
@@ -57,8 +57,8 @@
                             Clientes
                         </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('add_client') }}">Agregar Nuevo Cliente</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('list_clients') }}">Listado de Clientes</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.add_client') }}">Agregar Nuevo Cliente</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.list_clients') }}">Listado de Clientes</a></li>
                             </ul>
                     </li>
                     <li class="nav-item dropdown">
@@ -66,8 +66,8 @@
                             Productores
                         </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('add_grower') }}">Agregar Nuevo Productor</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('list_growers') }}">Listado de Productores</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.add_grower') }}">Agregar Nuevo Productor</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.list_growers') }}">Listado de Productores</a></li>
                             </ul>
                     </li>
                     <li class="nav-item dropdown">
@@ -75,8 +75,8 @@
                            Variedades
                         </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('add_variety') }}">Agregar Nueva Variedad</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('list_varieties') }}">Listado de Variedades</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.add_variety') }}">Agregar Nueva Variedad</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.list_varieties') }}">Listado de Variedades</a></li>
                             </ul>
                     </li>
                     <li class="nav-item dropdown">
@@ -84,8 +84,8 @@
                            Envases MP
                         </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('add_raw_material_packaging') }}">Agregar Nuevo Envase MP</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('list_raw_material_packagings') }}">Listado de Envases MP</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.add_raw_material_packaging') }}">Agregar Nuevo Envase MP</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.list_raw_material_packagings') }}">Listado de Envases MP</a></li>
                             </ul>
                     </li>
                     {% endif %}
@@ -96,13 +96,13 @@
                         </a>
                             <ul class="dropdown-menu">
                                 {% if current_user.has_role('Admin') or (current_user.from_area('Materia Prima') and current_user.has_role('Contribuidor')) %}
-                                <li><a class="dropdown-item" href="{{ url_for('create_raw_material_reception') }}">Crear Recepción</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('materiaprima.create_raw_material_reception') }}">Crear Recepción</a></li>
                                 {% endif %}
                                 {% if current_user.has_role('Admin') or (current_user.from_area('Materia Prima') and current_user.has_role('Contribuidor')) %}
-                                <li><a class="dropdown-item" href="{{ url_for('list_rmrs') }}">Listado de Recepciones</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('materiaprima.list_rmrs') }}">Listado de Recepciones</a></li>
                                 {% endif %}
                                 {% if current_user.has_role('Admin') or (current_user.from_area('Materia Prima') and current_user.has_role('Lector')) %}
-                                <li><a class="dropdown-item" href="{{ url_for('list_lots') }}">Listado de Lotes</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('materiaprima.list_lots') }}">Listado de Lotes</a></li>
                                 {% endif %}
                             </ul>
                     </li>
@@ -114,12 +114,12 @@
                         </a>
                             <ul class="dropdown-menu">
                                 {% if current_user.has_role('Admin') or (current_user.from_area('Calidad') and current_user.has_role('Contribuidor')) %}
-                                <li><a class="dropdown-item" href="{{ url_for('create_lot_qc') }}">Crear QC Lotes</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('create_sample_qc') }}">Crear QC Muestras</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('qc.create_lot_qc') }}">Crear QC Lotes</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('qc.create_sample_qc') }}">Crear QC Muestras</a></li>
                                 {% endif %}
                                 {% if current_user.has_role('Admin') or (current_user.from_area('Calidad') and (current_user.has_role('Contribuidor') or current_user.has_role('Lector'))) %}
-                                <li><a class="dropdown-item" href="{{ url_for('list_lot_qc_reports') }}">Listado de QC Lotes</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('list_sample_qc_reports') }}">Listado de QC Muestras</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('qc.list_lot_qc_reports') }}">Listado de QC Lotes</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('qc.list_sample_qc_reports') }}">Listado de QC Muestras</a></li>
                                 {% endif %}
                             </ul>
                     </li>
@@ -131,10 +131,10 @@
                         </a>
                             <ul class="dropdown-menu">
                                 {% if current_user.has_role('Admin') or (current_user.from_area('Materia Prima') and current_user.has_role('Contribuidor')) %}
-                                <li><a class="dropdown-item" href="{{ url_for('create_fumigation') }}">Crear Fumigación</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('fumigation.create_fumigation') }}">Crear Fumigación</a></li>
                                 {% endif %}
                                 {% if current_user.has_role('Admin') or (current_user.from_area('Materia Prima') and (current_user.has_role('Contribuidor') or current_user.has_role('Lector'))) %}
-                                <li><a class="dropdown-item" href="{{ url_for('list_fumigations') }}">Listado de Fumigaciones</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('fumigation.list_fumigations') }}">Listado de Fumigaciones</a></li>
                                 {% endif %}
                             </ul>
                     </li>
@@ -146,11 +146,11 @@
                         <span class="subtle">Hola, {{ current_user.name }}</span>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('logout') }}">Salir</a>
+                        <a class="nav-link" href="{{ url_for('auth.logout') }}">Salir</a>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('login') }}">Iniciar sesión</a>
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">Iniciar sesión</a>
                     </li>
                     {% endif %}
                 </ul>

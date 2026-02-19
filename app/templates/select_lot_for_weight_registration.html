@@ -9,7 +9,7 @@
         <p class="subtle">Lotes pendientes de registro de peso.</p>
     </div>
     <div class="page-actions">
-        <a href="{{ url_for('list_lots') }}" class="btn btn-outline-secondary">Volver a lotes</a>
+        <a href="{{ url_for('materiaprima.list_lots') }}" class="btn btn-outline-secondary">Volver a lotes</a>
     </div>
 </div>
 
@@ -32,7 +32,7 @@
                 <td>{{ lot.raw_material_packaging.name if lot.raw_material_packaging else 'N/A' }}</td>
                 <td>{{ lot.packagings_quantity }}</td>
                 <td class="actions">
-                    <a href="{{ url_for('register_full_truck_weight', lot_id=lot.id) }}" class="btn btn-primary btn-sm">
+                    <a href="{{ url_for('materiaprima.register_full_truck_weight', lot_id=lot.id) }}" class="btn btn-primary btn-sm">
                         Registrar peso
                     </a>
                 </td>
@@ -42,7 +42,7 @@
                 <td colspan="5">
                     <div class="empty-state">
                         <div>No hay lotes pendientes de pesaje.</div>
-                        <a href="{{ url_for('list_lots') }}" class="btn btn-primary btn-sm">Ver lotes</a>
+                        <a href="{{ url_for('materiaprima.list_lots') }}" class="btn btn-primary btn-sm">Ver lotes</a>
                     </div>
                 </td>
             </tr>

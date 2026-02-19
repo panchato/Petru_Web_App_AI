@@ -6,7 +6,7 @@
         <p class="subtle">Gestiona recepciones y crea lotes asociados.</p>
     </div>
     <div class="page-actions">
-        <a href="{{ url_for('create_raw_material_reception') }}" class="btn btn-primary">Crear recepci&oacute;n</a>
+        <a href="{{ url_for('materiaprima.create_raw_material_reception') }}" class="btn btn-primary">Crear recepci&oacute;n</a>
     </div>
 </div>
 <div class="table-responsive">
@@ -50,7 +50,7 @@
             </div>
             </td>
             <td class="actions">
-                <a href="{{ url_for('create_lot', reception_id=reception.id) }}" class="btn btn-outline-secondary btn-sm">Crear lote</a>
+                <a href="{{ url_for('materiaprima.create_lot', reception_id=reception.id) }}" class="btn btn-outline-secondary btn-sm">Crear lote</a>
             </td>
         </tr>
         {% else %}
@@ -58,7 +58,7 @@
             <td colspan="7">
                 <div class="empty-state">
                     <div>No se encontraron recepciones en la base de datos.</div>
-                    <a href="{{ url_for('create_raw_material_reception') }}" class="btn btn-primary btn-sm">Crear recepci&oacute;n</a>
+                    <a href="{{ url_for('materiaprima.create_raw_material_reception') }}" class="btn btn-primary btn-sm">Crear recepci&oacute;n</a>
                 </div>
             </td>
         </tr>

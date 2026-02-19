@@ -17,7 +17,7 @@
 <section
     class="ops-dashboard"
     id="opsDashboard"
-    data-summary-url="{{ url_for('index_summary_api') }}"
+    data-summary-url="{{ url_for('dashboard.index_summary_api') }}"
     data-refresh-seconds="45"
 >
     <div class="ops-topline">
@@ -31,8 +31,8 @@
 
     {% if can_execute_actions %}
     <div class="ops-quick-links" aria-label="Acciones rápidas de operación">
-        <a href="{{ url_for('list_lots') }}">Ir a lotes</a>
-        <a href="{{ url_for('list_fumigations') }}">Ir a fumigaciones</a>
+        <a href="{{ url_for('materiaprima.list_lots') }}">Ir a lotes</a>
+        <a href="{{ url_for('fumigation.list_fumigations') }}">Ir a fumigaciones</a>
     </div>
     {% endif %}
 
@@ -188,7 +188,7 @@
     <p class="subtle mb-0">Solicita el rol de Dashboard o acceso de área para ver este panel.</p>
     {% else %}
     <p class="subtle mb-3">Inicia sesión para revisar indicadores y acceder a los módulos operacionales.</p>
-    <a href="{{ url_for('login') }}" class="btn btn-primary">Iniciar sesión</a>
+    <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Iniciar sesión</a>
     {% endif %}
 </section>
 {% endif %}

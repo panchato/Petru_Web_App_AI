@@ -165,7 +165,7 @@ class DashboardOperationalTests(unittest.TestCase):
             db.session.commit()
 
         self._login()
-        with patch("app.routes._server_now_local", return_value=fixed_now_local):
+        with patch("app.blueprints.dashboard.services._server_now_local", return_value=fixed_now_local):
             response = self.client.get("/api/dashboard/summary")
         self.assertEqual(response.status_code, 200)
         payload = response.get_json()
@@ -199,7 +199,7 @@ class DashboardOperationalTests(unittest.TestCase):
             no_fum_number = f"{lot_no_fum.lot_number:03d}"
 
         self._login()
-        with patch("app.routes._server_now_local", return_value=fixed_now_local):
+        with patch("app.blueprints.dashboard.services._server_now_local", return_value=fixed_now_local):
             response = self.client.get("/api/dashboard/summary")
         self.assertEqual(response.status_code, 200)
         payload = response.get_json()

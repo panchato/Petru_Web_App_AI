@@ -61,7 +61,7 @@
         <p class="subtle">Registra mediciones y valida los totales calculados.</p>
     </div>
     <div class="page-actions">
-        <a href="{{ url_for('list_lot_qc_reports') }}" class="btn btn-outline-secondary">Volver al listado</a>
+        <a href="{{ url_for('qc.list_lot_qc_reports') }}" class="btn btn-outline-secondary">Volver al listado</a>
     </div>
 </div>
 
@@ -261,7 +261,7 @@
 
     <div class="page-actions">
         {{ form.submit(class="btn btn-primary") }}
-        <a href="{{ url_for('list_lot_qc_reports') }}" class="btn btn-outline-secondary">Cancelar</a>
+        <a href="{{ url_for('qc.list_lot_qc_reports') }}" class="btn btn-outline-secondary">Cancelar</a>
     </div>
 </form>
 {% endblock %}

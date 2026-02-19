@@ -19,14 +19,20 @@ Built with Flask + SQLAlchemy, with a service-oriented application layer for bus
 The current codebase follows a practical layered shape:
 
 1. Presentation layer
-- `app/routes.py`: HTTP routes, request/response, flashes, redirects
+- `app/blueprints/auth/routes.py`: auth routes
+- `app/blueprints/admin/routes.py`: admin CRUD routes
+- `app/blueprints/materiaprima/routes.py`: receptions and lots routes
+- `app/blueprints/qc/routes.py`: QC routes
+- `app/blueprints/fumigation/routes.py`: fumigation routes
+- `app/blueprints/dashboard/routes.py`: dashboard and health routes
 - `app/templates/`: Jinja templates
 - `app/static/`: styles and static assets
 
 2. Application/service layer
 - `app/services/lot_service.py`: lot creation and net-weight compute-on-write
-- `app/services/fumigation_service.py`: strict fumigation state transitions
+- `app/services/fumigation_service.py`: strict fumigation state transitions and state machine (`VALID_TRANSITIONS`)
 - `app/services/qc_service.py`: QC validations and QC record creation
+- `app/services/pdf_cache_service.py`: disk-backed PDF cache helpers
 
 3. Domain/data layer
 - `app/models.py`: SQLAlchemy models and DB constraints
@@ -36,6 +42,8 @@ The current codebase follows a practical layered shape:
 - `app/permissions.py`: centralized permission checks and decorators
 - `app/upload_security.py`: upload allowlists, MIME checks, size limits, optional AV hook
 - `app/__init__.py`: app bootstrap, CSRF, request ID, structured logging
+- `app/http_helpers.py`: shared HTTP and pagination/upload helpers
+- `app/blueprints/dashboard/services.py`: dashboard aggregation logic
 
 ## Key Business Rules
 
@@ -43,6 +51,7 @@ The current codebase follows a practical layered shape:
   - `1` available -> `2` assigned -> `3` started -> `4` completed
 - QC validation:
   - size breakdown units must sum to `100`
+  - fumigation transitions are defined in `VALID_TRANSITIONS` (`app/services/fumigation_service.py`) and enforced via `can_transition()` and `transition_fumigation_status()`
   - `inshell_weight > 0`
   - yield is computed from business formula
 - Lot net weight is compute-on-write from truck weights and packaging tare
@@ -66,12 +75,34 @@ Dependencies are listed in `requirements.txt`.
 app/
   __init__.py
   config.py
+  http_helpers.py
   models.py
-  routes.py
   forms.py
   permissions.py
   upload_security.py
+  blueprints/
+    auth/
+      __init__.py
+      routes.py
+    admin/
+      __init__.py
+      routes.py
+    materiaprima/
+      __init__.py
+      routes.py
+    qc/
+      __init__.py
+      routes.py
+    fumigation/
+      __init__.py
+      routes.py
+    dashboard/
+      __init__.py
+      routes.py
+      services.py
   services/
+    fumigation_service.py  # state machine (VALID_TRANSITIONS)
+    pdf_cache_service.py
   templates/
   static/
 migrations/
@@ -117,6 +148,14 @@ http://127.0.0.1:5000
 - Password: `dx12bb40`
 
 Important: change this immediately in non-local environments.
+
+## Environment Variables
+
+- `SECRET_KEY`: default `very_secret_key`
+- `DATABASE_URL`: default local SQLite under app data (`sqlite:///<...>/database.db`)
+- `CACHE_TYPE`: default `SimpleCache`
+- `CACHE_TIMEOUT_DASHBOARD`: default `60` (seconds)
+- `PDF_CACHE_DIR`: default `app/static/pdf_cache/` (resolved to absolute path)
 
 ## Database and Migrations
 
@@ -169,6 +208,7 @@ powershell -ExecutionPolicy Bypass -File .\run_tests.ps1 tests.test_fumigation_s
   - randomized filenames
   - private file serving through authenticated routes
   - optional antivirus hook (ClamAV command)
+- Generated PDFs are cached in `PDF_CACHE_DIR` (default `app/static/pdf_cache/`) and served only through authenticated routes.
 
 ## Logging and Observability
 
