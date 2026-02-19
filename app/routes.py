@@ -12,7 +12,20 @@ from werkzeug.utils import secure_filename
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    dashboard = None
+    if current_user.is_authenticated:
+        dashboard = {
+            'total_lots': Lot.query.count(),
+            'pending_qc_lots': Lot.query.filter_by(has_qc=False).count(),
+            'open_receptions': RawMaterialReception.query.filter_by(is_open=True).count(),
+            'active_fumigations': Fumigation.query.filter_by(is_active=True).count(),
+            'fumigation_stage_1': Lot.query.filter_by(fumigation_status='1').count(),
+            'fumigation_stage_2': Lot.query.filter_by(fumigation_status='2').count(),
+            'fumigation_stage_3': Lot.query.filter_by(fumigation_status='3').count(),
+            'fumigation_stage_4': Lot.query.filter_by(fumigation_status='4').count(),
+        }
+
+    return render_template('index.html', dashboard=dashboard)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
