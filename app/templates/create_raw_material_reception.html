@@ -1,39 +1,90 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container">
-
-    <h2>Recepci&oacute;n de Materia Prima - Primer Paso</h2>
-    <form method="POST">
-        {{ form.hidden_tag() }}
-        <div class="form-group">{{ form.client_id.label }} {{ form.client_id(class="form-select", required=True) }}
-        </div>
-        <div class="form-group">{{ form.grower_id.label }} {{ form.grower_id(class="form-select", required=True) }}
-        </div>
-        <div class="form-group">{{ form.waybill.label }} {{ form.waybill(class="form-control", type="number", min="1",
-            required=True) }}</div>
-        <div class="form-group">{{ form.date.label }} {{ form.date(class="form-control", type="date", required=True) }}
-        </div>
-        <div class="form-group">{{ form.time.label }} {{ form.time(class="form-control", type="time", required=True) }}
-        </div>
-        <div class="form-group">{{ form.truck_plate.label }} {{ form.truck_plate(class="form-control", required=True,
-            placeholder="ABCD12 &oacute; AB1234", maxlength="6") }}</div>
-        <div class="form-group">{{ form.trucker_name.label }} {{ form.trucker_name(class="form-control") }}</div>
-        <div class="form-group">{{ form.observations.label }} {{ form.observations(class="form-control", rows="3") }}
-        </div>
-        <div class="form-actions">{{ form.submit(class="btn btn-primary") }} <a href="{{ url_for('list_rmrs') }}"
-                class="btn btn-secondary">Cancelar</a></div>
-    </form>
-
-    {% if reception_id %}
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var createLotUrl = "{{ url_for('create_lot', reception_id=reception_id) if reception_id else '#' }}";
-            if (createLotUrl !== '#' && confirm('Recepci\u00f3n creada. \u00bfDesea crear un lote ahora?')) {
-                window.location.href = createLotUrl;
-            }
-        });
-    </script>
-    {% endif %}
-
+<div class="page-header">
+    <div>
+        <h2>Recepci&oacute;n de materia prima</h2>
+        <p class="subtle">Paso 1: registra los datos de la recepci&oacute;n.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('list_rmrs') }}" class="btn btn-outline-secondary">Volver al listado</a>
+    </div>
 </div>
+
+<div class="form-section">
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="row g-3">
+        <div class="col-md-6">
+            {{ form.client_id.label(class="form-label required") }}
+            {{ form.client_id(class="form-select", aria_describedby="reception_client_error") }}
+            {% if form.client_id.errors %}
+            <div id="reception_client_error" class="field-error" role="alert">{{ form.client_id.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            {{ form.grower_id.label(class="form-label required") }}
+            {{ form.grower_id(class="form-select", aria_describedby="reception_grower_error") }}
+            {% if form.grower_id.errors %}
+            <div id="reception_grower_error" class="field-error" role="alert">{{ form.grower_id.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            {{ form.waybill.label(class="form-label required") }}
+            {{ form.waybill(class="form-control", aria_describedby="reception_waybill_error") }}
+            {% if form.waybill.errors %}
+            <div id="reception_waybill_error" class="field-error" role="alert">{{ form.waybill.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-3">
+            {{ form.date.label(class="form-label required") }}
+            {{ form.date(class="form-control", aria_describedby="reception_date_error") }}
+            {% if form.date.errors %}
+            <div id="reception_date_error" class="field-error" role="alert">{{ form.date.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-3">
+            {{ form.time.label(class="form-label required") }}
+            {{ form.time(class="form-control", aria_describedby="reception_time_error") }}
+            {% if form.time.errors %}
+            <div id="reception_time_error" class="field-error" role="alert">{{ form.time.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            {{ form.truck_plate.label(class="form-label") }}
+            {{ form.truck_plate(class="form-control", placeholder="ABCD12 o AB1234", aria_describedby="reception_plate_error") }}
+            {% if form.truck_plate.errors %}
+            <div id="reception_plate_error" class="field-error" role="alert">{{ form.truck_plate.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            {{ form.trucker_name.label(class="form-label") }}
+            {{ form.trucker_name(class="form-control", aria_describedby="reception_trucker_error") }}
+            {% if form.trucker_name.errors %}
+            <div id="reception_trucker_error" class="field-error" role="alert">{{ form.trucker_name.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            {{ form.observations.label(class="form-label") }}
+            {{ form.observations(class="form-control", rows="3", aria_describedby="reception_obs_error") }}
+            {% if form.observations.errors %}
+            <div id="reception_obs_error" class="field-error" role="alert">{{ form.observations.errors[0] }}</div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="page-actions mt-4">
+        {{ form.submit(class="btn btn-primary") }}
+        <a href="{{ url_for('list_rmrs') }}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+</form>
+</div>
+
+{% if reception_id %}
+<div class="alert alert-success d-flex flex-wrap justify-content-between align-items-center mt-4">
+    <div>Recepci&oacute;n creada correctamente.</div>
+    <div class="page-actions">
+        <a href="{{ url_for('create_lot', reception_id=reception_id) }}" class="btn btn-primary btn-sm">Crear lote</a>
+    </div>
+</div>
+{% endif %}
+
 {% endblock %}

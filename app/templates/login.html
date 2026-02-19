@@ -1,19 +1,39 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container">
-    <h2>Iniciar Sesi&oacute;n</h2>
+<div class="page-header">
+    <div>
+        <h2>Iniciar sesi&oacute;n</h2>
+        <p class="subtle">Acceso exclusivo para personal autorizado.</p>
+    </div>
+</div>
 
+<div class="form-section">
     <form method="POST" action="">
         {{ form.hidden_tag() }}
-        <div class="form-group">
-            {{ form.email.label }}
-            {{ form.email(class="form-control", type="email", required=True) }}
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="alert alert-danger" role="alert">
+            {{ messages[0] }}
         </div>
-        <div class="form-group">
-            {{ form.password.label }}
-            {{ form.password(class="form-control", required=True) }}
+        {% endif %}
+        {% endwith %}
+        <div class="form-group mb-3">
+            {{ form.email.label(class="form-label required") }}
+            {{ form.email(class="form-control", aria_describedby="email_help email_error") }}
+            <div id="email_help" class="form-help">Usa tu correo corporativo.</div>
+            {% if form.email.errors %}
+            <div id="email_error" class="field-error" role="alert">{{ form.email.errors[0] }}</div>
+            {% endif %}
         </div>
-        <div class="form-actions">
+        <div class="form-group mb-3">
+            {{ form.password.label(class="form-label required") }}
+            {{ form.password(class="form-control", aria_describedby="password_help password_error") }}
+            <div id="password_help" class="form-help">Recuerda que tu clave distingue may&uacute;sculas.</div>
+            {% if form.password.errors %}
+            <div id="password_error" class="field-error" role="alert">{{ form.password.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="page-actions">
             {{ form.submit(class="btn btn-primary") }}
         </div>
     </form>

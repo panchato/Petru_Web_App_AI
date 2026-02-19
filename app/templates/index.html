@@ -1,190 +1,20 @@
 {% extends "base.html" %}
 {% block content %}
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap');
-
-    :root {
-        --dash-bg: #F3C1BC;
-        --dash-ink: #595959;
-        --dash-muted: #595959;
-        --dash-primary: #A6431F;
-        --dash-accent: #D98494;
-        --dash-surface: #ffffff;
-    }
-
-    .dashboard-wrap {
-        font-family: "Manrope", "Segoe UI", sans-serif;
-        color: var(--dash-ink);
-        min-height: calc(100vh - 72px);
-        background: linear-gradient(180deg, var(--dash-bg) 0%, #ffffff 100%);
-        padding: 1.75rem 0 2.5rem;
-    }
-
-    .dashboard-hero {
-        background: linear-gradient(130deg, var(--dash-primary) 0%, var(--dash-accent) 100%);
-        color: #ffffff;
-        border-radius: 1.15rem;
-        box-shadow: 0 18px 45px rgba(89, 89, 89, 0.22);
-        padding: 1.4rem 1.6rem;
-        margin-bottom: 1.1rem;
-    }
-
-    .dashboard-subtitle {
-        color: var(--dash-bg);
-        margin-bottom: 0;
-    }
-
-    .kpi-card {
-        border: none;
-        background: var(--dash-surface);
-        border-radius: 1rem;
-        box-shadow: 0 14px 34px rgba(16, 24, 40, 0.08);
-        height: 100%;
-    }
-
-    .kpi-label {
-        font-size: 0.82rem;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        color: var(--dash-muted);
-        margin-bottom: 0.3rem;
-        text-transform: uppercase;
-    }
-
-    .kpi-value {
-        font-size: 2rem;
-        font-weight: 800;
-        line-height: 1.1;
-        color: var(--dash-ink);
-        margin-bottom: 0;
-    }
-
-    .kpi-hint {
-        margin-top: 0.35rem;
-        margin-bottom: 0;
-        font-size: 0.86rem;
-        color: var(--dash-muted);
-    }
-
-    .badge-stage {
-        border-radius: 999px;
-        font-size: 0.82rem;
-        font-weight: 700;
-        padding: 0.4rem 0.72rem;
-    }
-
-    .stage-1 { background: #e7f3ee; color: #1c7c54; }
-    .stage-2 { background: #fff1d6; color: #b0761c; }
-    .stage-3 { background: #e7eef8; color: #1f4f86; }
-    .stage-4 { background: #e6f6ec; color: #1b6f4e; }
-
-    .quick-actions {
-        background: #F3C1BC;
-        border: 1px solid #D98494;
-        border-radius: 1rem;
-        padding: 1.1rem;
-    }
-
-    .quick-actions .btn {
-        border-radius: 0.7rem;
-        font-weight: 700;
-    }
-
-    .btn-login {
-        background: var(--dash-primary);
-        border-color: var(--dash-primary);
-        color: #fff;
-    }
-
-    .btn-login:hover {
-        background: var(--dash-accent);
-        border-color: var(--dash-accent);
-        color: #fff;
-    }
-</style>
-
-<section class="dashboard-wrap">
-    <div class="container-fluid px-md-3 px-xl-4">
-        {% if current_user.is_authenticated and dashboard %}
-        <div class="dashboard-hero">
-            <h1 class="h3 mb-2">Panel Operativo</h1>
-            <p class="dashboard-subtitle">Hola, {{ current_user.name }}. Resumen diario de operaciones y control de lotes.</p>
-        </div>
-
-        <div class="row g-3 mb-3">
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card kpi-card">
-                    <div class="card-body">
-                        <p class="kpi-label">Lotes Totales</p>
-                        <p class="kpi-value">{{ dashboard.total_lots }}</p>
-                        <p class="kpi-hint">Registrados en el sistema</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card kpi-card">
-                    <div class="card-body">
-                        <p class="kpi-label">Lotes Sin QC</p>
-                        <p class="kpi-value">{{ dashboard.pending_qc_lots }}</p>
-                        <p class="kpi-hint">Pendientes de control</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card kpi-card">
-                    <div class="card-body">
-                        <p class="kpi-label">Recepciones Abiertas</p>
-                        <p class="kpi-value">{{ dashboard.open_receptions }}</p>
-                        <p class="kpi-hint">Aún aceptan nuevos lotes</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card kpi-card">
-                    <div class="card-body">
-                        <p class="kpi-label">Fumigaciones Activas</p>
-                        <p class="kpi-value">{{ dashboard.active_fumigations }}</p>
-                        <p class="kpi-hint">Órdenes en curso</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row g-3">
-            <div class="col-12 col-xl-8">
-                <div class="card kpi-card">
-                    <div class="card-body">
-                        <h2 class="h5 mb-3">Estado de Fumigación por Lote</h2>
-                        <div class="d-flex flex-wrap gap-2">
-                            <span class="badge-stage stage-1">Etapa 1: {{ dashboard.fumigation_stage_1 }}</span>
-                            <span class="badge-stage stage-2">Etapa 2: {{ dashboard.fumigation_stage_2 }}</span>
-                            <span class="badge-stage stage-3">Etapa 3: {{ dashboard.fumigation_stage_3 }}</span>
-                            <span class="badge-stage stage-4">Etapa 4: {{ dashboard.fumigation_stage_4 }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-xl-4">
-                <div class="quick-actions h-100">
-                    <h2 class="h6 mb-3">Acciones Rápidas</h2>
-                    <div class="d-grid gap-2">
-                        <a class="btn btn-outline-dark" href="{{ url_for('create_raw_material_reception') }}">Nueva Recepción</a>
-                        <a class="btn btn-outline-dark" href="{{ url_for('create_lot_qc') }}">Registrar QC Lote</a>
-                        <a class="btn btn-outline-dark" href="{{ url_for('create_sample_qc') }}">Registrar QC Muestra</a>
-                        <a class="btn btn-outline-dark" href="{{ url_for('create_fumigation') }}">Crear Fumigación</a>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="page-header">
+    <div>
+        <h1>Intranet Agroindustrial Petru SpA</h1>
+        {% if current_user.is_authenticated %}
+        <p class="subtle">Hola, {{ current_user.name }}. Selecciona un m&oacute;dulo desde el men&uacute;.</p>
         {% else %}
-        <div class="dashboard-hero">
-            <h1 class="h3 mb-2">Intranet Agroindustrial Petru SpA</h1>
-            <p class="dashboard-subtitle">Ingresa para ver KPIs operativos, recepciones y estado de fumigación.</p>
-            <div class="mt-3">
-                <a class="btn btn-login" href="{{ url_for('login') }}">Ir a Login</a>
-            </div>
-        </div>
+        <p class="subtle">Ingresa con tu cuenta para acceder a los m&oacute;dulos.</p>
         {% endif %}
     </div>
-</section>
+    <div class="page-actions">
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary">Salir</a>
+        {% else %}
+        <a href="{{ url_for('login') }}" class="btn btn-primary">Iniciar sesi&oacute;n</a>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}

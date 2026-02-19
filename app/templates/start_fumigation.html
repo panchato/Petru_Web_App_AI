@@ -2,8 +2,26 @@
 {% block content %}
 <div class="container">
 
-    <h2>Iniciar Fumigaci&oacute;n - {{ fumigation.work_order }}</h2>
+    <div class="page-header">
+        <div>
+            <h2>Iniciar fumigaci&oacute;n</h2>
+            <p class="subtle">Orden de trabajo {{ fumigation.work_order }}.</p>
+        </div>
+        <div class="page-actions">
+            <a href="{{ url_for('list_fumigations') }}" class="btn btn-outline-secondary">Volver al listado</a>
+        </div>
+    </div>
 
+    <div class="stepper" aria-label="Progreso fumigaci&oacute;n">
+        <div class="stepper-item">1. Creaci&oacute;n</div>
+        <div class="stepper-item active">2. Inicio</div>
+        <div class="stepper-item">3. Finalizaci&oacute;n</div>
+    </div>
+    <div class="callout">
+        Siguiente acci&oacute;n recomendada: completar la fumigaci&oacute;n al finalizar el tiempo de exposici&oacute;n.
+    </div>
+
+    <div class="form-section">
     <div class="mb-3">
         <p><strong>Orden de Trabajo:</strong> {{ fumigation.work_order }}</p>
         <p><strong>Lotes:</strong>
@@ -17,41 +35,46 @@
         {{ form.hidden_tag() }}
 
         <div class="form-group">
-            {{ form.real_start_date.label(class="form-label") }}
-            {{ form.real_start_date(class="form-control", type="date", required=True) }}
+            {{ form.real_start_date.label(class="form-label required") }}
+            {{ form.real_start_date(class="form-control", type="date", required=True, aria_describedby="start_date_help start_date_error") }}
+            <div id="start_date_help" class="form-help">Fecha efectiva de inicio.</div>
             {% if form.real_start_date.errors %}
-            <div class="alert alert-danger">{{ form.real_start_date.errors[0] }}</div>
+            <div id="start_date_error" class="field-error" role="alert">{{ form.real_start_date.errors[0] }}</div>
             {% endif %}
         </div>
 
         <div class="form-group">
-            {{ form.real_start_time.label(class="form-label") }}
-            {{ form.real_start_time(class="form-control", type="time", required=True) }}
+            {{ form.real_start_time.label(class="form-label required") }}
+            {{ form.real_start_time(class="form-control", type="time", required=True, aria_describedby="start_time_help start_time_error") }}
+            <div id="start_time_help" class="form-help">Hora efectiva de inicio.</div>
             {% if form.real_start_time.errors %}
-            <div class="alert alert-danger">{{ form.real_start_time.errors[0] }}</div>
+            <div id="start_time_error" class="field-error" role="alert">{{ form.real_start_time.errors[0] }}</div>
             {% endif %}
         </div>
 
         <div class="form-group">
             {{ form.work_order_doc.label(class="form-label") }}
-            {{ form.work_order_doc(class="form-control", accept=".pdf") }}
+            {{ form.work_order_doc(class="form-control", accept=".pdf", aria_describedby="work_doc_help work_doc_error") }}
+            <div id="work_doc_help" class="form-help">Adjunta la OT en PDF (opcional).</div>
             {% if form.work_order_doc.errors %}
-            <div class="alert alert-danger">{{ form.work_order_doc.errors[0] }}</div>
+            <div id="work_doc_error" class="field-error" role="alert">{{ form.work_order_doc.errors[0] }}</div>
             {% endif %}
         </div>
 
         <div class="form-group">
             {{ form.fumigation_sign.label(class="form-label") }}
-            {{ form.fumigation_sign(class="form-control", accept="image/jpeg,image/png") }}
+            {{ form.fumigation_sign(class="form-control", accept="image/jpeg,image/png", aria_describedby="sign_help sign_error") }}
+            <div id="sign_help" class="form-help">Adjunta foto del cartel (opcional).</div>
             {% if form.fumigation_sign.errors %}
-            <div class="alert alert-danger">{{ form.fumigation_sign.errors[0] }}</div>
+            <div id="sign_error" class="field-error" role="alert">{{ form.fumigation_sign.errors[0] }}</div>
             {% endif %}
         </div>
 
         <div class="form-actions">
             {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('list_fumigations') }}" class="btn btn-secondary">Cancelar</a>
+            <a href="{{ url_for('list_fumigations') }}" class="btn btn-outline-secondary">Cancelar</a>
         </div>
     </form>
+    </div>
 </div>
 {% endblock %}

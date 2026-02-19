@@ -1,38 +1,90 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container">
+<div class="page-header">
+    <div>
+        <h2>Creaci&oacute;n de lotes</h2>
+        <p class="subtle">Paso 2: registra los datos del lote para la recepci&oacute;n seleccionada.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('list_rmrs') }}" class="btn btn-outline-secondary">Volver a recepciones</a>
+        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Inicio</a>
+    </div>
+</div>
 
-    <h2>Creaci&oacute;n de Lotes - Segundo Paso</h2>
+<div class="form-section">
     <form method="POST">
         {{ form.hidden_tag() }}
-        <div class="row">
-            <div class="col-md-4 form-group">{{ form.client_name.label }} {{ form.client_name(class="form-control") }}
+        <h3>Datos de recepci&oacute;n</h3>
+        <div class="row g-3">
+            <div class="col-md-4">
+                {{ form.client_name.label(class="form-label required") }}
+                {{ form.client_name(class="form-control", aria_describedby="client_help client_error") }}
+                <div id="client_help" class="form-help">Selecciona el cliente asociado a la recepci&oacute;n.</div>
+                {% if form.client_name.errors %}
+                <div id="client_error" class="field-error" role="alert">{{ form.client_name.errors[0] }}</div>
+                {% endif %}
             </div>
-            <div class="col-md-4 form-group">{{ form.grower_name.label }} {{ form.grower_name(class="form-control") }}
+            <div class="col-md-4">
+                {{ form.grower_name.label(class="form-label required") }}
+                {{ form.grower_name(class="form-control", aria_describedby="grower_help grower_error") }}
+                <div id="grower_help" class="form-help">Selecciona el productor asociado.</div>
+                {% if form.grower_name.errors %}
+                <div id="grower_error" class="field-error" role="alert">{{ form.grower_name.errors[0] }}</div>
+                {% endif %}
             </div>
-            <div class="col-md-4 form-group">{{ form.waybill.label }} {{ form.waybill(class="form-control") }}</div>
+            <div class="col-md-4">
+                {{ form.waybill.label(class="form-label required") }}
+                {{ form.waybill(class="form-control", aria_describedby="waybill_help waybill_error") }}
+                <div id="waybill_help" class="form-help">N&uacute;mero de gu&iacute;a o documento de transporte.</div>
+                {% if form.waybill.errors %}
+                <div id="waybill_error" class="field-error" role="alert">{{ form.waybill.errors[0] }}</div>
+                {% endif %}
+            </div>
         </div>
-        <div class="form-group">{{ form.variety_id.label }} {{ form.variety_id(class="form-select", required=True) }}
+        <hr class="my-4">
+        <h3>Detalle del lote</h3>
+        <div class="row g-3">
+            <div class="col-md-6">
+                {{ form.variety_id.label(class="form-label required") }}
+                {{ form.variety_id(class="form-select", aria_describedby="variety_help variety_error") }}
+                <div id="variety_help" class="form-help">Selecciona la variedad recibida.</div>
+                {% if form.variety_id.errors %}
+                <div id="variety_error" class="field-error" role="alert">{{ form.variety_id.errors[0] }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                {{ form.rawmaterialpackaging_id.label(class="form-label required") }}
+                {{ form.rawmaterialpackaging_id(class="form-select", aria_describedby="packaging_help packaging_error") }}
+                <div id="packaging_help" class="form-help">Define el tipo de envase utilizado.</div>
+                {% if form.rawmaterialpackaging_id.errors %}
+                <div id="packaging_error" class="field-error" role="alert">{{ form.rawmaterialpackaging_id.errors[0] }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                {{ form.packagings_quantity.label(class="form-label required") }}
+                {{ form.packagings_quantity(class="form-control", aria_describedby="quantity_help quantity_error") }}
+                <div id="quantity_help" class="form-help">Cantidad de envases asociados al lote.</div>
+                {% if form.packagings_quantity.errors %}
+                <div id="quantity_error" class="field-error" role="alert">{{ form.packagings_quantity.errors[0] }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                {{ form.lot_number.label(class="form-label required") }}
+                {{ form.lot_number(class="form-control", aria_describedby="lot_help lot_error") }}
+                <div id="lot_help" class="form-help">N&uacute;mero interno del lote (debe ser &uacute;nico).</div>
+                {% if form.lot_number.errors %}
+                <div id="lot_error" class="field-error" role="alert">{{ form.lot_number.errors[0] }}</div>
+                {% endif %}
+            </div>
         </div>
-        <div class="form-group">{{ form.rawmaterialpackaging_id.label }} {{
-            form.rawmaterialpackaging_id(class="form-select", required=True) }}</div>
-        <div class="form-group">{{ form.packagings_quantity.label }} {{ form.packagings_quantity(class="form-control",
-            type="number", min="1", required=True) }}</div>
-        <div class="form-group">{{ form.lot_number.label }} {{ form.lot_number(class="form-control", type="number",
-            min="1", required=True) }}</div>
-        <div class="form-check">{{ form.is_last_lot(class="form-check-input") }} {{
-            form.is_last_lot.label(class="form-check-label") }}</div>
-        <div class="form-actions">{{ form.submit(class="btn btn-primary") }} <a href="{{ url_for('list_lots') }}"
-                class="btn btn-secondary">Cancelar</a></div>
+        <div class="form-check mt-4">
+            {{ form.is_last_lot(class="form-check-input") }}
+            {{ form.is_last_lot.label(class="form-check-label") }}
+        </div>
+        <div class="page-actions mt-4">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
     </form>
-
-    {% if labels_url %}
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            window.open("{{ labels_url }}", "_blank");
-        });
-    </script>
-    {% endif %}
-
 </div>
 {% endblock %}
+
