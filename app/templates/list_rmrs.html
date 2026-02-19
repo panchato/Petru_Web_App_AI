@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="container">
 <h2>Listado de Recepciones</h2>
 <div class="table-responsive">
-<table class="table table-striped" id="myTable">
+<table class="table table-striped table-searchable" id="myTable">
     <thead>
         <tr>
             <th scope="col">#</th>
@@ -42,10 +43,11 @@
         </tr>
         {% else %}
         <tr>
-            <td colspan="5">No se encontraron recepciones en la base de datos.</td>
+            <td colspan="6">No se encontraron recepciones en la base de datos.</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+</div>
 </div>
 {% endblock %}

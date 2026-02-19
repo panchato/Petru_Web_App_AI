@@ -1,26 +1,48 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Listado de Envases Matera Prima</h2>
-<table class="table table-striped">
+<div class="container">
+<h2>Listado de Envases Materia Prima</h2>
+<table class="table table-striped table-searchable">
     <thead>
         <tr>
             <th scope="col">#</th>
             <th scope="col">Nombre</th>
             <th scope="col">Tara</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Acciones</th>
         </tr>
     </thead>
     <tbody>
         {% for rmp in rmps %}
-        <tr>
+        <tr class="{{ 'table-secondary' if not rmp.is_active }}">
             <th scope="row">{{ loop.index }}</th>
             <td>{{ rmp.name }}</td>
             <td>{{ rmp.tare }}</td>
+            <td>
+                {% if rmp.is_active %}
+                <span class="badge bg-success">Activo</span>
+                {% else %}
+                <span class="badge bg-secondary">Inactivo</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{{ url_for('edit_raw_material_packaging', rmp_id=rmp.id) }}" class="btn btn-warning btn-sm">Editar</a>
+                <form method="POST" action="{{ url_for('toggle_raw_material_packaging', rmp_id=rmp.id) }}" style="display:inline;">
+                    {{ csrf_form.hidden_tag() }}
+                    {% if rmp.is_active %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Desactivar este envase?')">Desactivar</button>
+                    {% else %}
+                    <button type="submit" class="btn btn-outline-success btn-sm">Activar</button>
+                    {% endif %}
+                </form>
+            </td>
         </tr>
         {% else %}
         <tr>
-            <td colspan="6">No se encontraron envases en la base de datos.</td>
+            <td colspan="5">No se encontraron envases en la base de datos.</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+</div>
 {% endblock %}

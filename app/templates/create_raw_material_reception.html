@@ -1,59 +1,39 @@
 {% extends 'base.html' %}
 {% block content %}
-<script>
-  $(document).ready(function() {
-      {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-      var category = "{{ messages[0][0] }}";
-      var message = "{{ messages[0][1] }}";
+<div class="container">
 
-      // HTML structure for the modal content based on the message category
-      if (category === 'success') {
-          $('.modal-body').html('<div class="alert alert-success" role="alert">' + message + '</div>');
-          $('.modal-footer').html('<button type="button" class="btn btn-secondary" onclick="window.location.href=\'{{ url_for('index') }}\'">Home</button>' +
-                                  '<button type="button" class="btn btn-primary" onclick="window.location.href=\'{{ url_for('create_lot', reception_id=reception_id) if reception_id else '#'}}\'">Crear Lote</button>');
-      } else if (category === 'warning') {
-          $('.modal-body').html('<div class="alert alert-warning" role="alert">' + message + '</div>');
-          $('.modal-footer').html('<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>');
-      } else {
-          $('.modal-body').text(message);
-          $('.modal-footer').html('<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>');
-      }
-      $('#Modal').modal('show');
-      {% endif %}
-      {% endwith %}
-  });
-</script>
-  
-<h2>Recepción de Materia Prima - Primer Paso</h2>
-<form method="POST">
-    {{ form.hidden_tag() }}
-    <div class="form-group">{{ form.client_id.label }} {{ form.client_id(class="form-select") }}</div>
-    <div class="form-group">{{ form.grower_id.label }} {{ form.grower_id(class="form-select") }}</div>
-    <div class="form-group">{{ form.waybill.label }} {{ form.waybill(class="form-control") }}</div>
-    <div class="form-group">{{ form.date.label }} {{ form.date(class="form-control") }}</div>
-    <div class="form-group">{{ form.time.label }} {{ form.time(class="form-control") }}</div>
-    <div class="form-group">{{ form.truck_plate.label }} {{ form.truck_plate(class="form-control", placeholder="ABCD12 ó AB1234") }}</div>
-    <div class="form-group">{{ form.trucker_name.label }} {{ form.trucker_name(class="form-control") }}</div>
-    <div class="form-group">{{ form.observations.label }} {{ form.observations(class="form-control", rows="3") }}</div><br>
-    <div>{{ form.submit(class="btn btn-primary") }}</div>
-</form>
-<!-- Modal -->
-<div class="modal fade" id="Modal" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-      <div class="modal-content">
-          <div class="modal-header">
-              <h5 class="modal-title" id="ModalLabel">Mensaje del Sistema</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-          <!-- Message will be injected here -->
-          </div>
-          <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-          </div>
-      </div>
-  </div>
+    <h2>Recepci&oacute;n de Materia Prima - Primer Paso</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">{{ form.client_id.label }} {{ form.client_id(class="form-select", required=True) }}
+        </div>
+        <div class="form-group">{{ form.grower_id.label }} {{ form.grower_id(class="form-select", required=True) }}
+        </div>
+        <div class="form-group">{{ form.waybill.label }} {{ form.waybill(class="form-control", type="number", min="1",
+            required=True) }}</div>
+        <div class="form-group">{{ form.date.label }} {{ form.date(class="form-control", type="date", required=True) }}
+        </div>
+        <div class="form-group">{{ form.time.label }} {{ form.time(class="form-control", type="time", required=True) }}
+        </div>
+        <div class="form-group">{{ form.truck_plate.label }} {{ form.truck_plate(class="form-control", required=True,
+            placeholder="ABCD12 &oacute; AB1234", maxlength="6") }}</div>
+        <div class="form-group">{{ form.trucker_name.label }} {{ form.trucker_name(class="form-control") }}</div>
+        <div class="form-group">{{ form.observations.label }} {{ form.observations(class="form-control", rows="3") }}
+        </div>
+        <div class="form-actions">{{ form.submit(class="btn btn-primary") }} <a href="{{ url_for('list_rmrs') }}"
+                class="btn btn-secondary">Cancelar</a></div>
+    </form>
+
+    {% if reception_id %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var createLotUrl = "{{ url_for('create_lot', reception_id=reception_id) if reception_id else '#' }}";
+            if (createLotUrl !== '#' && confirm('Recepci\u00f3n creada. \u00bfDesea crear un lote ahora?')) {
+                window.location.href = createLotUrl;
+            }
+        });
+    </script>
+    {% endif %}
+
 </div>
-
 {% endblock %}
