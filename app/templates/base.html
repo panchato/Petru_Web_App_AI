@@ -4,6 +4,7 @@
     <title>Intranet Agroindustrial Petru SpA</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -106,16 +107,20 @@
                             </ul>
                     </li>
                     {% endif %}
-                    {% if current_user.is_authenticated %}
+                    {% if current_user.is_authenticated and current_user.is_active and not current_user.is_external and (current_user.has_role('Admin') or current_user.from_area('Calidad')) %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             QC Lotes
                         </a>
                             <ul class="dropdown-menu">
+                                {% if current_user.has_role('Admin') or (current_user.from_area('Calidad') and current_user.has_role('Contribuidor')) %}
                                 <li><a class="dropdown-item" href="{{ url_for('create_lot_qc') }}">Crear QC Lotes</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('create_sample_qc') }}">Crear QC Muestras</a></li>
+                                {% endif %}
+                                {% if current_user.has_role('Admin') or (current_user.from_area('Calidad') and (current_user.has_role('Contribuidor') or current_user.has_role('Lector'))) %}
                                 <li><a class="dropdown-item" href="{{ url_for('list_lot_qc_reports') }}">Listado de QC Lotes</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('list_sample_qc_reports') }}">Listado de QC Muestras</a></li>
+                                {% endif %}
                             </ul>
                     </li>
                     {% endif %}
@@ -132,6 +137,20 @@
                                 <li><a class="dropdown-item" href="{{ url_for('list_fumigations') }}">Listado de Fumigaciones</a></li>
                                 {% endif %}
                             </ul>
+                    </li>
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item d-flex align-items-center me-2">
+                        <span class="subtle">Hola, {{ current_user.name }}</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Salir</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">Iniciar sesión</a>
                     </li>
                     {% endif %}
                 </ul>

@@ -1,20 +1,195 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="page-header">
+<div class="page-header page-header-compact">
     <div>
-        <h1>Intranet Agroindustrial Petru SpA</h1>
-        {% if current_user.is_authenticated %}
-        <p class="subtle">Hola, {{ current_user.name }}. Selecciona un m&oacute;dulo desde el men&uacute;.</p>
+        <h1>Panel Operacional</h1>
+        {% if show_operational_dashboard %}
+        <p class="subtle">Vista priorizada para operadores y lectores.</p>
+        {% elif current_user.is_authenticated %}
+        <p class="subtle">Tu usuario no tiene permisos para visualizar este tablero.</p>
         {% else %}
-        <p class="subtle">Ingresa con tu cuenta para acceder a los m&oacute;dulos.</p>
-        {% endif %}
-    </div>
-    <div class="page-actions">
-        {% if current_user.is_authenticated %}
-        <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary">Salir</a>
-        {% else %}
-        <a href="{{ url_for('login') }}" class="btn btn-primary">Iniciar sesi&oacute;n</a>
+        <p class="subtle">Ingresa con tu cuenta para acceder al tablero operativo.</p>
         {% endif %}
     </div>
 </div>
+
+{% if show_operational_dashboard and dashboard_summary %}
+<section
+    class="ops-dashboard"
+    id="opsDashboard"
+    data-summary-url="{{ url_for('index_summary_api') }}"
+    data-refresh-seconds="45"
+>
+    <div class="ops-topline">
+        <h2 class="ops-topline-title">Resumen de hoy</h2>
+        <div class="ops-updated">
+            <span>Actualizado:</span>
+            <strong id="opsUpdatedAt"></strong>
+            <span id="opsUpdatedAgo" class="subtle"></span>
+        </div>
+    </div>
+
+    {% if can_execute_actions %}
+    <div class="ops-quick-links" aria-label="Acciones rápidas de operación">
+        <a href="{{ url_for('list_lots') }}">Ir a lotes</a>
+        <a href="{{ url_for('list_fumigations') }}">Ir a fumigaciones</a>
+    </div>
+    {% endif %}
+
+    <section class="form-section" aria-label="Indicadores de recepción del día">
+        <div class="ops-kpi-grid">
+            <article class="ops-kpi-card">
+                <div class="ops-kpi-label">Lotes recibidos hoy</div>
+                <div class="ops-kpi-value" id="opsLotsToday">{{ dashboard_summary.today.lots_received }}</div>
+            </article>
+            <article class="ops-kpi-card">
+                <div class="ops-kpi-label">Kilogramos recibidos hoy</div>
+                <div class="ops-kpi-value" id="opsKgToday">{{ "{:,.2f}".format(dashboard_summary.today.kilograms_received).replace(",", "X").replace(".", ",").replace("X", ".") }}</div>
+            </article>
+        </div>
+        <p class="ops-empty-inline d-none" id="opsTodayEmpty">Sin datos hoy.</p>
+    </section>
+
+    <section class="form-section ops-alerts-section" aria-label="Alertas operacionales prioritarias">
+        <div class="ops-section-head">
+            <h3>Alertas operacionales</h3>
+            <span class="subtle">Prioridad alta</span>
+        </div>
+        <div class="ops-alert-grid" id="opsAlertGrid">
+            {% for alert in dashboard_summary.alerts %}
+            <article class="ops-alert-card{% if alert.count > 0 %} is-active{% endif %}" data-alert-key="{{ alert.key }}">
+                <div class="ops-alert-title">{{ alert.label }}</div>
+                <div class="ops-alert-count" data-alert-count>{{ alert.count }}</div>
+                {% if alert.link %}
+                <a class="ops-alert-link" data-alert-link href="{{ alert.link }}">Abrir listado filtrado</a>
+                {% endif %}
+            </article>
+            {% endfor %}
+        </div>
+        <p class="ops-empty-inline{% if dashboard_summary.alerts | sum(attribute='count') > 0 %} d-none{% endif %}" id="opsAlertsEmpty">Sin alertas activas.</p>
+    </section>
+
+    <section class="form-section" aria-label="Estado de fumigación por etapa">
+        <div class="ops-section-head">
+            <h3>Pipeline de fumigación</h3>
+            <span class="subtle">Estados actuales</span>
+        </div>
+        <div class="ops-pipeline-grid" id="opsPipelineGrid">
+            {% for status in dashboard_summary.fumigation_status %}
+            <div class="ops-pipeline-item" data-status-key="{{ status.key }}">
+                <span class="{{ status.badge_class }}">{{ status.label }}</span>
+                <strong data-status-count>{{ status.count }}</strong>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</section>
+
+<script>
+    (function () {
+        const root = document.getElementById('opsDashboard');
+        if (!root) return;
+
+        const summaryUrl = root.dataset.summaryUrl;
+        const refreshMs = (parseInt(root.dataset.refreshSeconds || '45', 10) || 45) * 1000;
+        const numberFmt = new Intl.NumberFormat('es-CL');
+        const kgFmt = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const initialSummary = {{ dashboard_summary | tojson }};
+        let lastGeneratedAt = initialSummary.generated_at;
+
+        function updateUpdatedAt(isoTimestamp) {
+            if (!isoTimestamp) return;
+            const ts = new Date(isoTimestamp);
+            const atEl = document.getElementById('opsUpdatedAt');
+            const agoEl = document.getElementById('opsUpdatedAgo');
+            if (!atEl || !agoEl) return;
+
+            atEl.textContent = ts.toLocaleString('es-CL');
+            const seconds = Math.max(0, Math.round((Date.now() - ts.getTime()) / 1000));
+            if (seconds < 60) {
+                agoEl.textContent = '(hace ' + seconds + ' s)';
+            } else if (seconds < 3600) {
+                agoEl.textContent = '(hace ' + Math.floor(seconds / 60) + ' min)';
+            } else {
+                agoEl.textContent = '(hace ' + Math.floor(seconds / 3600) + ' h)';
+            }
+        }
+
+        function renderSummary(data) {
+            if (!data) return;
+            lastGeneratedAt = data.generated_at || lastGeneratedAt;
+
+            const lotsToday = Number(data.today?.lots_received || 0);
+            const kgToday = Number(data.today?.kilograms_received || 0);
+            document.getElementById('opsLotsToday').textContent = numberFmt.format(lotsToday);
+            document.getElementById('opsKgToday').textContent = kgFmt.format(kgToday);
+            document.getElementById('opsTodayEmpty').classList.toggle('d-none', !(lotsToday === 0 && kgToday === 0));
+
+            const statuses = Array.isArray(data.fumigation_status) ? data.fumigation_status : [];
+            statuses.forEach((status) => {
+                const container = root.querySelector('[data-status-key="' + status.key + '"]');
+                if (!container) return;
+                const countEl = container.querySelector('[data-status-count]');
+                if (countEl) {
+                    countEl.textContent = numberFmt.format(Number(status.count || 0));
+                }
+            });
+
+            const alerts = Array.isArray(data.alerts) ? data.alerts : [];
+            let activeAlerts = 0;
+            alerts.forEach((alert) => {
+                const card = root.querySelector('[data-alert-key="' + alert.key + '"]');
+                if (!card) return;
+                const count = Number(alert.count || 0);
+                activeAlerts += count;
+                card.classList.toggle('is-active', count > 0);
+                const countEl = card.querySelector('[data-alert-count]');
+                if (countEl) {
+                    countEl.textContent = numberFmt.format(count);
+                }
+                const linkEl = card.querySelector('[data-alert-link]');
+                if (linkEl) {
+                    if (alert.link) {
+                        linkEl.setAttribute('href', alert.link);
+                        linkEl.classList.remove('d-none');
+                    } else {
+                        linkEl.classList.add('d-none');
+                    }
+                }
+            });
+            document.getElementById('opsAlertsEmpty').classList.toggle('d-none', activeAlerts > 0);
+
+            updateUpdatedAt(lastGeneratedAt);
+        }
+
+        async function refreshSummary() {
+            try {
+                const response = await fetch(summaryUrl, {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (!response.ok) return;
+                const data = await response.json();
+                renderSummary(data);
+            } catch (_error) {
+                // Keep last successful snapshot visible if refresh fails.
+            }
+        }
+
+        renderSummary(initialSummary);
+        window.setInterval(refreshSummary, refreshMs);
+        window.setInterval(function () { updateUpdatedAt(lastGeneratedAt); }, 1000);
+    })();
+</script>
+{% else %}
+<section class="hero-panel" aria-label="Acceso al sistema">
+    {% if current_user.is_authenticated %}
+    <p class="subtle mb-0">Solicita el rol de Dashboard o acceso de área para ver este panel.</p>
+    {% else %}
+    <p class="subtle mb-3">Inicia sesión para revisar indicadores y acceder a los módulos operacionales.</p>
+    <a href="{{ url_for('login') }}" class="btn btn-primary">Iniciar sesión</a>
+    {% endif %}
+</section>
+{% endif %}
 {% endblock %}

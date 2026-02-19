@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero-panel auth-shell">
+    <h2>Error interno</h2>
+    <p class="subtle mt-2">Ocurrió un problema inesperado. Intenta nuevamente en unos minutos.</p>
+    <div class="page-actions mt-4">
+        <a href="{{ url_for('index') }}" class="btn btn-primary">Volver al inicio</a>
+    </div>
+</section>
+{% endblock %}

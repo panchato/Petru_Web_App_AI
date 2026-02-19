@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero-panel auth-shell">
+    <h2>Acceso denegado</h2>
+    <p class="subtle mt-2">No tienes permisos para acceder a este recurso.</p>
+    <div class="page-actions mt-4">
+        <a href="{{ url_for('index') }}" class="btn btn-primary">Volver al inicio</a>
+    </div>
+</section>
+{% endblock %}

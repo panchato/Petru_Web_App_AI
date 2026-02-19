@@ -46,6 +46,7 @@
         <div class="row g-3">
             <div class="col-md-6">
                 {{ form.variety_id.label(class="form-label required") }}
+                <input type="text" class="form-control mb-2" id="varietySearch" placeholder="Buscar variedad...">
                 {{ form.variety_id(class="form-select", aria_describedby="variety_help variety_error") }}
                 <div id="variety_help" class="form-help">Selecciona la variedad recibida.</div>
                 {% if form.variety_id.errors %}
@@ -86,5 +87,34 @@
         </div>
     </form>
 </div>
+
+<script>
+    (function () {
+        var search = document.getElementById('varietySearch');
+        var select = document.getElementById('variety_id');
+        if (!search || !select) return;
+
+        var originalOptions = Array.from(select.options).map(function (option) {
+            return { value: option.value, text: option.text, selected: option.selected };
+        });
+
+        function render(filterText) {
+            var selectedValue = select.value;
+            var normalized = (filterText || '').toLowerCase().trim();
+            select.innerHTML = '';
+            originalOptions.forEach(function (item) {
+                if (!normalized || item.text.toLowerCase().indexOf(normalized) !== -1) {
+                    var opt = document.createElement('option');
+                    opt.value = item.value;
+                    opt.text = item.text;
+                    opt.selected = item.value === selectedValue || (item.selected && !selectedValue);
+                    select.appendChild(opt);
+                }
+            });
+        }
+
+        search.addEventListener('input', function () { render(search.value); });
+    })();
+</script>
 {% endblock %}
 

@@ -16,6 +16,7 @@
     <div class="row g-3">
         <div class="col-md-6">
             {{ form.client_id.label(class="form-label required") }}
+            <input type="text" class="form-control mb-2" id="clientSearch" placeholder="Buscar cliente...">
             {{ form.client_id(class="form-select", aria_describedby="reception_client_error") }}
             {% if form.client_id.errors %}
             <div id="reception_client_error" class="field-error" role="alert">{{ form.client_id.errors[0] }}</div>
@@ -23,6 +24,7 @@
         </div>
         <div class="col-md-6">
             {{ form.grower_id.label(class="form-label required") }}
+            <input type="text" class="form-control mb-2" id="growerSearch" placeholder="Buscar productor...">
             {{ form.grower_id(class="form-select", aria_describedby="reception_grower_error") }}
             {% if form.grower_id.errors %}
             <div id="reception_grower_error" class="field-error" role="alert">{{ form.grower_id.errors[0] }}</div>
@@ -86,5 +88,39 @@
     </div>
 </div>
 {% endif %}
+
+<script>
+    (function () {
+        function bindSearch(searchId, selectId) {
+            var search = document.getElementById(searchId);
+            var select = document.getElementById(selectId);
+            if (!search || !select) return;
+
+            var originalOptions = Array.from(select.options).map(function (option) {
+                return { value: option.value, text: option.text, selected: option.selected };
+            });
+
+            function render(filterText) {
+                var selectedValue = select.value;
+                var normalized = (filterText || '').toLowerCase().trim();
+                select.innerHTML = '';
+                originalOptions.forEach(function (item) {
+                    if (!normalized || item.text.toLowerCase().indexOf(normalized) !== -1) {
+                        var opt = document.createElement('option');
+                        opt.value = item.value;
+                        opt.text = item.text;
+                        opt.selected = item.value === selectedValue || (item.selected && !selectedValue);
+                        select.appendChild(opt);
+                    }
+                });
+            }
+
+            search.addEventListener('input', function () { render(search.value); });
+        }
+
+        bindSearch('clientSearch', 'client_id');
+        bindSearch('growerSearch', 'grower_id');
+    })();
+</script>
 
 {% endblock %}

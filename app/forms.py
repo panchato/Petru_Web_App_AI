@@ -94,8 +94,8 @@ class CreateRawMaterialReceptionForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super(CreateRawMaterialReceptionForm, self).__init__(*args, **kwargs)
-        self.grower_id.choices = [(g.id, g.name) for g in Grower.query.filter_by(is_active=True).all()]
-        self.client_id.choices = [(c.id, c.name) for c in Client.query.filter_by(is_active=True).all()]
+        self.grower_id.choices = [(g.id, g.name) for g in Grower.query.filter_by(is_active=True).order_by(Grower.name).all()]
+        self.client_id.choices = [(c.id, c.name) for c in Client.query.filter_by(is_active=True).order_by(Client.name).all()]
 
 class CreateLotForm(FlaskForm):
     reception_id = HiddenField('Reception ID')
@@ -111,8 +111,8 @@ class CreateLotForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super(CreateLotForm, self).__init__(*args, **kwargs)
-        self.variety_id.choices = [(v.id, v.name) for v in Variety.query.filter_by(is_active=True).all()]
-        self.rawmaterialpackaging_id.choices = [(p.id, p.name) for p in RawMaterialPackaging.query.filter_by(is_active=True).all()]
+        self.variety_id.choices = [(v.id, v.name) for v in Variety.query.filter_by(is_active=True).order_by(Variety.name).all()]
+        self.rawmaterialpackaging_id.choices = [(p.id, p.name) for p in RawMaterialPackaging.query.filter_by(is_active=True).order_by(RawMaterialPackaging.name).all()]
 
 class FullTruckWeightForm(FlaskForm):
     loaded_truck_weight = FloatField('Loaded Truck Weight', validators=[DataRequired()])
@@ -162,9 +162,41 @@ class LotQCForm(FlaskForm):
         )
         self.lot_id.choices = [(l.id, l.lot_number) for l in available_lots]
 
-    def validate_shelled_weight(self, field):
-        total_color_weight = self.extra_light.data + self.light.data + self.light_amber.data + self.amber.data # type: ignore
-        field.data = total_color_weight
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators=extra_validators)
+        if not is_valid:
+            return False
+
+        inshell_weight = float(self.inshell_weight.data or 0)
+        if inshell_weight <= 0:
+            self.inshell_weight.errors.append('El peso con cáscara debe ser mayor que 0.')
+            return False
+
+        units = (
+            int(self.lessthan30.data or 0)
+            + int(self.between3032.data or 0)
+            + int(self.between3234.data or 0)
+            + int(self.between3436.data or 0)
+            + int(self.morethan36.data or 0)
+        )
+        if units != 100:
+            self.units.errors.append('Las unidades analizadas deben sumar exactamente 100.')
+            return False
+
+        shelled_weight = (
+            float(self.extra_light.data or 0)
+            + float(self.light.data or 0)
+            + float(self.light_amber.data or 0)
+            + float(self.amber.data or 0)
+        )
+        if shelled_weight <= 0:
+            self.shelled_weight.errors.append('El peso de pulpa debe ser mayor que 0.')
+            return False
+
+        self.units.data = units
+        self.shelled_weight.data = shelled_weight
+        self.yieldpercentage.data = round((shelled_weight / inshell_weight) * 100, 2)
+        return True
         
 class SampleQCForm(FlaskForm):
     grower = StringField('Productor', validators=[DataRequired(), Length(max=64)])
@@ -200,9 +232,41 @@ class SampleQCForm(FlaskForm):
     shelled_image = FileField('Imagen de Pulpa', validators=[FileRequired(), FileAllowed(['jpg', 'png', 'jpeg'], 'Imágenes Solamente!')])
     submit = SubmitField('Crear QC')
 
-    def validate_shelled_weight(self, field):
-        total_color_weight = self.extra_light.data + self.light.data + self.light_amber.data + self.amber.data # type: ignore
-        field.data = total_color_weight
+    def validate(self, extra_validators=None):
+        is_valid = super().validate(extra_validators=extra_validators)
+        if not is_valid:
+            return False
+
+        inshell_weight = float(self.inshell_weight.data or 0)
+        if inshell_weight <= 0:
+            self.inshell_weight.errors.append('El peso con cáscara debe ser mayor que 0.')
+            return False
+
+        units = (
+            int(self.lessthan30.data or 0)
+            + int(self.between3032.data or 0)
+            + int(self.between3234.data or 0)
+            + int(self.between3436.data or 0)
+            + int(self.morethan36.data or 0)
+        )
+        if units != 100:
+            self.units.errors.append('Las unidades analizadas deben sumar exactamente 100.')
+            return False
+
+        shelled_weight = (
+            float(self.extra_light.data or 0)
+            + float(self.light.data or 0)
+            + float(self.light_amber.data or 0)
+            + float(self.amber.data or 0)
+        )
+        if shelled_weight <= 0:
+            self.shelled_weight.errors.append('El peso de pulpa debe ser mayor que 0.')
+            return False
+
+        self.units.data = units
+        self.shelled_weight.data = shelled_weight
+        self.yieldpercentage.data = round((shelled_weight / inshell_weight) * 100, 2)
+        return True
         
 class FumigationForm(FlaskForm):
     work_order = StringField('Orden de Trabajo', validators=[DataRequired()])

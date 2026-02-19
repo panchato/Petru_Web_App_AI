@@ -4,330 +4,347 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Operacional - PETRU</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <style>
-        :root {
-            --bg: #f2f7f5;
-            --panel: #ffffff;
-            --ink: #173426;
-            --muted: #61756b;
-            --brand: #1f7a4f;
-            --accent: #f4a259;
-            --alert: #b3261e;
-            --border: #d9e5df;
-        }
-        * { box-sizing: border-box; }
         body {
             margin: 0;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            background: radial-gradient(circle at 15% 0%, #d9eadf, var(--bg) 45%);
-            color: var(--ink);
-            font-family: "Segoe UI", "Tahoma", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
         }
-        .screen {
-            height: 100%;
-            padding: 20px;
+
+        .dashboard-tv {
+            min-height: 100vh;
+            padding: 16px;
             display: grid;
-            grid-template-rows: auto auto 1fr auto auto;
-            gap: 12px;
+            grid-template-rows: auto auto auto auto;
+            align-content: start;
+            gap: 10px;
         }
-        .header {
+
+        .tv-header {
             display: flex;
             justify-content: space-between;
-            align-items: baseline;
+            align-items: end;
             border-bottom: 1px solid var(--border);
             padding-bottom: 8px;
         }
-        .header h1 {
+
+        .tv-header h1 {
             margin: 0;
-            font-size: 36px;
-            letter-spacing: 0.3px;
+            font-size: clamp(1.6rem, 2.8vw, 2.3rem);
+            line-height: 1.1;
         }
-        .meta {
-            font-size: 18px;
-            color: var(--muted);
+
+        .tv-meta {
+            color: #5f6972;
+            font-size: 0.9rem;
+            font-weight: 500;
             display: flex;
-            gap: 20px;
+            align-items: center;
+            gap: 10px;
         }
+
+        .health-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 2px 8px;
+            font-size: 0.8rem;
+            background: #f6f8fa;
+            color: #4f5b66;
+        }
+
+        .health-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            background: #2f7d52;
+        }
+
+        .health-chip.stale .health-dot {
+            background: #b02a37;
+        }
+
+        .health-chip.stale {
+            color: #7b1e25;
+            border-color: #e4c5c5;
+            background: #fff6f6;
+        }
+
+        .section-title {
+            margin: 2px 0 0;
+            color: #5f6972;
+            font-size: 0.84rem;
+            text-transform: uppercase;
+            letter-spacing: 0.055em;
+            font-weight: 700;
+        }
+
         .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 10px;
         }
-        .card {
-            background: var(--panel);
+
+        .kpi-card {
             border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 10px 14px;
-            box-shadow: 0 4px 16px rgba(31, 122, 79, 0.08);
+            border-radius: var(--radius);
+            background: var(--surface);
+            padding: 14px;
+            box-shadow: 0 1px 2px rgba(22, 26, 30, 0.04);
         }
-        .kpi-title {
-            font-size: 13px;
+
+        .kpi-label {
+            margin: 0;
             text-transform: uppercase;
-            letter-spacing: 0.4px;
-            color: var(--muted);
-            margin-bottom: 6px;
-        }
-        .kpi-value {
-            font-size: 34px;
+            letter-spacing: 0.04em;
+            font-size: 0.74rem;
+            color: #5f6972;
             font-weight: 700;
-            line-height: 1;
-            color: var(--ink);
         }
-        .middle {
+
+        .kpi-value {
+            margin: 8px 0 0;
+            font-size: clamp(3.1rem, 6vw, 4.8rem);
+            line-height: 1;
+            font-weight: 700;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            color: #505860;
+        }
+
+        .status-grid {
             display: grid;
-            grid-template-columns: 2fr 2fr 2fr 1.3fr;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 10px;
+        }
+
+        .status-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--surface);
+            padding: 11px 12px;
+        }
+
+        .status-value {
+            margin: 8px 0 0;
+            font-size: clamp(1.9rem, 4vw, 2.7rem);
+            line-height: 1;
+            font-weight: 700;
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            color: #4f5861;
+        }
+
+        .value-unit {
+            font-size: 0.33em;
+            color: #62707c;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+        }
+
+        .alerts-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            align-items: start;
+        }
+
+        .alert-card {
+            border: 1px solid #d9e0e7;
+            border-left: 5px solid #8d99a6;
+            border-radius: var(--radius);
+            background: #f8fafc;
+            padding: 12px;
             min-height: 0;
         }
-        .middle .card {
-            display: flex;
-            flex-direction: column;
-        }
-        .chart-wrap {
-            flex: 1;
-            min-height: 240px;
-        }
-        .chart-wrap canvas {
-            width: 100% !important;
-            height: 100% !important;
-        }
-        .list {
-            display: grid;
-            gap: 8px;
-            align-content: start;
-        }
-        .list-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 18px;
-            padding-bottom: 4px;
-            border-bottom: 1px dashed var(--border);
-        }
-        .status-strip {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-        .status-pill {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 8px 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .status-pill .name {
-            font-size: 16px;
-            color: var(--muted);
-        }
-        .status-pill .value {
-            font-size: 26px;
-            font-weight: 700;
-        }
-        .alerts {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-        .alert-card {
-            border-radius: 12px;
-            padding: 10px 14px;
-            border: 1px solid var(--border);
-            background: #fff;
-        }
-        .alert-card h3 {
-            margin: 0 0 8px;
-            font-size: 15px;
-            color: var(--muted);
+
+        .alert-title {
+            margin: 0;
+            font-size: 0.88rem;
             text-transform: uppercase;
-        }
-        .alert-card .val {
-            font-size: 30px;
+            letter-spacing: 0.04em;
+            color: #5f6972;
             font-weight: 700;
         }
-        .risk { color: var(--alert); }
-        .ok { color: var(--brand); }
+
+        .alert-value {
+            margin: 8px 0 0;
+            font-size: clamp(2rem, 4.1vw, 2.8rem);
+            line-height: 1;
+            font-weight: 700;
+            color: #58636f;
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        .alert-card.has-alert {
+            border-color: #e4c5c5;
+            border-left-color: var(--danger);
+            background: #fff8f8;
+        }
+
+        .alert-card.has-alert .alert-title {
+            color: #7b1e25;
+        }
+
+        .alert-card.has-alert .alert-value {
+            color: var(--danger);
+        }
+
+        @media (max-width: 950px) {
+            .status-grid,
+            .alerts-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 680px) {
+            .kpi-grid,
+            .status-grid,
+            .alerts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tv-header {
+                flex-direction: column;
+                align-items: start;
+                gap: 6px;
+            }
+        }
     </style>
 </head>
 <body>
-    <main class="screen">
-        <section class="header">
+    <main class="dashboard-tv">
+        <section class="tv-header">
             <h1>Panel Operacional PETRU</h1>
-            <div class="meta">
-                <span id="timestamp">Actualizado: --</span>
-                <span id="version">Versión: --</span>
+            <div class="tv-meta">
+                <span id="dashboard-updated">Actualizado: --</span>
+                <span class="health-chip" id="data-health"><span class="health-dot"></span><span id="data-health-text">al día</span></span>
             </div>
         </section>
 
-        <section class="kpi-grid">
-            <article class="card"><div class="kpi-title">Recepciones Hoy</div><div class="kpi-value" id="kpi-recepciones">0</div></article>
-            <article class="card"><div class="kpi-title">Lotes Hoy</div><div class="kpi-value" id="kpi-lotes">0</div></article>
-            <article class="card"><div class="kpi-title">Kg Netos Hoy</div><div class="kpi-value" id="kpi-kg">0</div></article>
-            <article class="card"><div class="kpi-title">QCs Hoy</div><div class="kpi-value" id="kpi-qcs">0</div></article>
-            <article class="card"><div class="kpi-title">Fumigaciones Activas</div><div class="kpi-value" id="kpi-fum-act">0</div></article>
-            <article class="card"><div class="kpi-title">Fumigaciones Completadas Hoy</div><div class="kpi-value" id="kpi-fum-comp">0</div></article>
-        </section>
-
-        <section class="middle">
-            <article class="card">
-                <div class="kpi-title">Lotes Creados por Día (7 días)</div>
-                <div class="chart-wrap"><canvas id="chartLots"></canvas></div>
+        <p class="section-title">Hoy</p>
+        <section class="kpi-grid" aria-label="KPI de hoy">
+            <article class="kpi-card">
+                <p class="kpi-label">Lotes recibidos hoy</p>
+                <p class="kpi-value"><span id="kpi-lots-today">0</span><span class="value-unit">lotes</span></p>
             </article>
-            <article class="card">
-                <div class="kpi-title">Kg Netos por Día (7 días)</div>
-                <div class="chart-wrap"><canvas id="chartKg"></canvas></div>
-            </article>
-            <article class="card">
-                <div class="kpi-title">Rendimiento Promedio QC por Día (7 días)</div>
-                <div class="chart-wrap"><canvas id="chartYield"></canvas></div>
-            </article>
-            <article class="card">
-                <div class="kpi-title">Top Defectos QC (7 días)</div>
-                <div class="list" id="top-defects"></div>
+            <article class="kpi-card">
+                <p class="kpi-label">Kilogramos recibidos hoy</p>
+                <p class="kpi-value"><span id="kpi-kg-today">0,00</span><span class="value-unit">kg</span></p>
             </article>
         </section>
 
-        <section class="status-strip">
-            <article class="status-pill"><span class="name">Pendiente</span><span class="value" id="pipe-1">0</span></article>
-            <article class="status-pill"><span class="name">Asignado</span><span class="value" id="pipe-2">0</span></article>
-            <article class="status-pill"><span class="name">En Proceso</span><span class="value" id="pipe-3">0</span></article>
-            <article class="status-pill"><span class="name">Completado</span><span class="value" id="pipe-4">0</span></article>
+        <p class="section-title">Fumigación</p>
+        <section class="status-grid" aria-label="Estado fumigación">
+            <article class="status-card">
+                <span class="status-badge status-available">Disponible</span>
+                <p class="status-value"><span id="status-available">0</span><span class="value-unit">lotes</span></p>
+            </article>
+            <article class="status-card">
+                <span class="status-badge status-assigned">Asignada</span>
+                <p class="status-value"><span id="status-assigned">0</span><span class="value-unit">lotes</span></p>
+            </article>
+            <article class="status-card">
+                <span class="status-badge status-active">En fumigación</span>
+                <p class="status-value"><span id="status-started">0</span><span class="value-unit">lotes</span></p>
+            </article>
+            <article class="status-card">
+                <span class="status-badge status-done">Finalizada</span>
+                <p class="status-value"><span id="status-completed">0</span><span class="value-unit">lotes</span></p>
+            </article>
         </section>
 
-        <section class="alerts">
-            <article class="alert-card">
-                <h3>Recepciones Abiertas</h3>
-                <div class="val ok" id="alert-open-receptions">0</div>
+        <p class="section-title">Alertas</p>
+        <section class="alerts-grid" aria-label="Alertas operacionales">
+            <article class="alert-card" data-alert-key="no_qc_over_24h">
+                <p class="alert-title">Sin QC &gt; 24 horas</p>
+                <p class="alert-value"><span id="alert-no-qc">0</span><span class="value-unit">lotes</span></p>
             </article>
-            <article class="alert-card">
-                <h3>Lotes Sin QC</h3>
-                <div class="val risk" id="alert-no-qc">0</div>
+            <article class="alert-card" data-alert-key="missing_net_weight_over_12h">
+                <p class="alert-title">Sin peso neto &gt; 12 horas</p>
+                <p class="alert-value"><span id="alert-no-weight">0</span><span class="value-unit">lotes</span></p>
             </article>
-            <article class="alert-card">
-                <h3>Riesgos Operacionales</h3>
-                <div class="list">
-                    <div class="list-row"><span>Lotes sin QC >24h</span><strong id="alert-no-qc-24h">0</strong></div>
-                    <div class="list-row"><span>Fumigaciones >48h</span><strong id="alert-fum-delay">0</strong></div>
-                    <div class="list-row"><span>% QC fuera rango (7d)</span><strong id="alert-out-range">0%</strong></div>
-                </div>
+            <article class="alert-card" data-alert-key="no_fumigation_over_48h">
+                <p class="alert-title">Sin fumigación &gt; 48 horas</p>
+                <p class="alert-value"><span id="alert-no-fumigation">0</span><span class="value-unit">lotes</span></p>
             </article>
         </section>
     </main>
 
     <script>
-        let lotsChart;
-        let kgChart;
-        let yieldChart;
-        let currentVersion = "";
+        const intFormatter = new Intl.NumberFormat("es-CL");
+        const kgFormatter = new Intl.NumberFormat("es-CL", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
 
-        function createChart(ctx, type, label, color) {
-            return new Chart(ctx, {
-                type: type,
-                data: { labels: [], datasets: [{ label: label, data: [], borderColor: color, backgroundColor: color + "66", borderWidth: 2, tension: 0.28 }] },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, ticks: { color: "#173426" } }, x: { ticks: { color: "#173426" } } }
-                }
-            });
+        function getAlertByKey(alerts, key) {
+            return (alerts || []).find((item) => item.key === key) || { count: 0 };
         }
 
-        function defectLabel(key) {
-            const map = {
-                broken_walnut: "Cascara Partida",
-                split_walnut: "Casco Abierto",
-                light_stain: "Mancha Leve",
-                serious_stain: "Mancha Grave",
-                adhered_hull: "Pelon Adherido",
-                shrivel: "Nuez Reseca",
-                empty: "Nuez Vana",
-                insect_damage: "Dano Insecto",
-                inactive_fungus: "Hongo Inactivo",
-                active_fungus: "Hongo Activo"
-            };
-            return map[key] || key;
-        }
-
-        async function loadSummary() {
-            const response = await fetch("/api/dashboard/summary", { cache: "no-store" });
-            const data = await response.json();
-            const k = data.kpis;
-            document.getElementById("kpi-recepciones").textContent = k.recepciones_hoy;
-            document.getElementById("kpi-lotes").textContent = k.lotes_hoy;
-            document.getElementById("kpi-kg").textContent = k.kg_netos_hoy_fmt;
-            document.getElementById("kpi-qcs").textContent = k.qcs_hoy;
-            document.getElementById("kpi-fum-act").textContent = k.fumigaciones_activas;
-            document.getElementById("kpi-fum-comp").textContent = k.fumigaciones_completadas_hoy;
-
-            document.getElementById("pipe-1").textContent = data.pipeline.status_1_pendiente;
-            document.getElementById("pipe-2").textContent = data.pipeline.status_2_asignado;
-            document.getElementById("pipe-3").textContent = data.pipeline.status_3_en_proceso;
-            document.getElementById("pipe-4").textContent = data.pipeline.status_4_completado;
-
-            document.getElementById("alert-open-receptions").textContent = k.recepciones_abiertas;
-            document.getElementById("alert-no-qc").textContent = k.lotes_sin_qc;
-            document.getElementById("alert-no-qc-24h").textContent = data.alerts.lotes_sin_qc_24h;
-            document.getElementById("alert-fum-delay").textContent = data.alerts.fumigaciones_retrasadas_48h;
-            document.getElementById("alert-out-range").textContent = `${k.qc_fuera_rango_pct_7d}%`;
-
-            const defectsContainer = document.getElementById("top-defects");
-            defectsContainer.innerHTML = "";
-            data.top_defectos_7d.forEach(item => {
-                const row = document.createElement("div");
-                row.className = "list-row";
-                row.innerHTML = `<span>${defectLabel(item.defecto)}</span><strong>${item.total}</strong>`;
-                defectsContainer.appendChild(row);
-            });
-        }
-
-        async function loadTimeseries() {
-            const response = await fetch("/api/dashboard/timeseries", { cache: "no-store" });
-            const data = await response.json();
-            lotsChart.data.labels = data.labels;
-            lotsChart.data.datasets[0].data = data.series.lotes_por_dia;
-            lotsChart.update();
-
-            kgChart.data.labels = data.labels;
-            kgChart.data.datasets[0].data = data.series.kg_netos_por_dia;
-            kgChart.update();
-
-            yieldChart.data.labels = data.labels;
-            yieldChart.data.datasets[0].data = data.series.yield_promedio_por_dia;
-            yieldChart.update();
-        }
-
-        async function checkVersionAndRefresh() {
-            const response = await fetch("/api/dashboard/version", { cache: "no-store" });
-            const data = await response.json();
-            const compactVersion = String(data.version).slice(-16);
-            document.getElementById("version").textContent = `Version: ${compactVersion}`;
-            if (!currentVersion) {
-                currentVersion = data.version;
+        function updateAlertCardState(alertKey, count) {
+            const card = document.querySelector(`[data-alert-key="${alertKey}"]`);
+            if (!card) {
                 return;
             }
-            if (data.version !== currentVersion) {
-                currentVersion = data.version;
-                await refreshDashboard();
-            }
+            card.classList.toggle("has-alert", count > 0);
+            card.style.order = String(-(count || 0));
+        }
+
+        function updateDataHealth(generatedAt) {
+            const healthChip = document.getElementById("data-health");
+            const healthText = document.getElementById("data-health-text");
+            const generated = generatedAt ? new Date(generatedAt) : null;
+            const ageSeconds = generated ? Math.floor((Date.now() - generated.getTime()) / 1000) : Number.POSITIVE_INFINITY;
+            const isStale = !Number.isFinite(ageSeconds) || ageSeconds > 120;
+            healthChip.classList.toggle("stale", isStale);
+            healthText.textContent = isStale ? "desactualizado" : "al día";
         }
 
         async function refreshDashboard() {
-            await Promise.all([loadSummary(), loadTimeseries()]);
-            document.getElementById("timestamp").textContent = `Actualizado: ${new Date().toLocaleString()}`;
+            const response = await fetch("/api/dashboard/summary", { cache: "no-store" });
+            const data = await response.json();
+
+            document.getElementById("kpi-lots-today").textContent = intFormatter.format(data.today?.lots_received || 0);
+            document.getElementById("kpi-kg-today").textContent = kgFormatter.format(data.today?.kilograms_received || 0);
+
+            const statusMap = {};
+            (data.fumigation_status || []).forEach((item) => {
+                statusMap[item.key] = item.count;
+            });
+            document.getElementById("status-available").textContent = intFormatter.format(statusMap.AVAILABLE || 0);
+            document.getElementById("status-assigned").textContent = intFormatter.format(statusMap.ASSIGNED || 0);
+            document.getElementById("status-started").textContent = intFormatter.format(statusMap.STARTED || 0);
+            document.getElementById("status-completed").textContent = intFormatter.format(statusMap.COMPLETED || 0);
+
+            const alertNoQc = getAlertByKey(data.alerts, "no_qc_over_24h");
+            const alertNoWeight = getAlertByKey(data.alerts, "missing_net_weight_over_12h");
+            const alertNoFumigation = getAlertByKey(data.alerts, "no_fumigation_over_48h");
+
+            document.getElementById("alert-no-qc").textContent = intFormatter.format(alertNoQc.count || 0);
+            document.getElementById("alert-no-weight").textContent = intFormatter.format(alertNoWeight.count || 0);
+            document.getElementById("alert-no-fumigation").textContent = intFormatter.format(alertNoFumigation.count || 0);
+
+            updateAlertCardState("no_qc_over_24h", alertNoQc.count || 0);
+            updateAlertCardState("missing_net_weight_over_12h", alertNoWeight.count || 0);
+            updateAlertCardState("no_fumigation_over_48h", alertNoFumigation.count || 0);
+
+            document.getElementById("dashboard-updated").textContent = `Actualizado: ${new Date().toLocaleString()}`;
+            updateDataHealth(data.generated_at);
         }
 
         window.addEventListener("DOMContentLoaded", async () => {
-            lotsChart = createChart(document.getElementById("chartLots"), "bar", "Lotes", "#1f7a4f");
-            kgChart = createChart(document.getElementById("chartKg"), "bar", "Kg Netos", "#f4a259");
-            yieldChart = createChart(document.getElementById("chartYield"), "line", "Yield", "#0d5d8f");
             await refreshDashboard();
-            await checkVersionAndRefresh();
-            setInterval(checkVersionAndRefresh, 5000);
             setInterval(refreshDashboard, 60000);
         });
     </script>

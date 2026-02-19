@@ -7,7 +7,7 @@
     </div>
 </div>
 
-<div class="form-section">
+<div class="form-section auth-shell">
     <form method="POST" action="">
         {{ form.hidden_tag() }}
         {% with messages = get_flashed_messages() %}
@@ -35,6 +35,7 @@
         </div>
         <div class="page-actions">
             {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Volver al inicio</a>
         </div>
     </form>
 </div>

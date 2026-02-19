@@ -15,17 +15,26 @@
         <div class="row g-3">
             <div class="col-md-6">
                 {{ form.loaded_truck_weight.label(class="form-label required") }}
-                {{ form.loaded_truck_weight(class="form-control", aria_describedby="loaded_weight_error") }}
+                {{ form.loaded_truck_weight(class="form-control", aria_describedby="loaded_weight_error", id="loadedWeightInput") }}
                 {% if form.loaded_truck_weight.errors %}
                 <div id="loaded_weight_error" class="field-error" role="alert">{{ form.loaded_truck_weight.errors[0] }}</div>
                 {% endif %}
             </div>
             <div class="col-md-6">
                 {{ form.empty_truck_weight.label(class="form-label required") }}
-                {{ form.empty_truck_weight(class="form-control", aria_describedby="empty_weight_error") }}
+                {{ form.empty_truck_weight(class="form-control", aria_describedby="empty_weight_error", id="emptyWeightInput") }}
                 {% if form.empty_truck_weight.errors %}
                 <div id="empty_weight_error" class="field-error" role="alert">{{ form.empty_truck_weight.errors[0] }}</div>
                 {% endif %}
+            </div>
+            <div class="col-12">
+                <div class="callout">
+                    <strong>Previsualización de peso neto:</strong>
+                    <span id="netWeightPreview">0,00 kg</span>
+                    <div class="form-help mt-1">
+                        Cálculo: cargado - vacío - (tara envase x cantidad envases)
+                    </div>
+                </div>
             </div>
         </div>
         <div class="page-actions mt-4">
@@ -34,4 +43,27 @@
         </div>
     </form>
 </div>
+<script>
+    (function () {
+        var loadedInput = document.getElementById('loadedWeightInput');
+        var emptyInput = document.getElementById('emptyWeightInput');
+        var preview = document.getElementById('netWeightPreview');
+        if (!loadedInput || !emptyInput || !preview) return;
+
+        var tare = Number('{{ lot.raw_material_packaging.tare if lot.raw_material_packaging else 0 }}');
+        var quantity = Number('{{ lot.packagings_quantity }}');
+        var formatter = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        function refreshPreview() {
+            var loaded = Number(loadedInput.value || 0);
+            var empty = Number(emptyInput.value || 0);
+            var net = loaded - empty - (tare * quantity);
+            preview.textContent = formatter.format(net) + ' kg';
+        }
+
+        loadedInput.addEventListener('input', refreshPreview);
+        emptyInput.addEventListener('input', refreshPreview);
+        refreshPreview();
+    })();
+</script>
 {% endblock %}

@@ -20,35 +20,62 @@
 </div>
 {% endif %}
 
-<form class="filters" id="lotFilters" aria-label="Filtros r&aacute;pidos de lotes">
+{% if active_alert %}
+<div class="alert alert-warning d-flex flex-wrap justify-content-between align-items-center">
+    <div>Filtro operacional activo: {{ active_alert.label }}</div>
+    <div class="page-actions">
+        <a href="{{ url_for('list_lots') }}" class="btn btn-outline-secondary btn-sm">Quitar filtro</a>
+    </div>
+</div>
+{% endif %}
+
+<form class="filters" method="GET" action="{{ url_for('list_lots') }}" aria-label="Filtros r&aacute;pidos de lotes">
+    {% if active_alert %}
+    <input type="hidden" name="alert" value="{{ active_alert.key }}">
+    {% endif %}
+    {% if labels_url %}
+    <input type="hidden" name="labels_url" value="{{ labels_url }}">
+    {% endif %}
     <div>
         <label class="form-label">Estado fumigaci&oacute;n</label>
-        <select class="form-select" id="statusFilter">
+        <select class="form-select" name="status">
             <option value="">Todos</option>
-            <option value="disponible">Disponible</option>
-            <option value="asignada">Asignada</option>
-            <option value="en_fumigacion">En fumigaci&oacute;n</option>
-            <option value="finalizada">Finalizada</option>
+            <option value="disponible" {% if filters.status == 'disponible' %}selected{% endif %}>Disponible</option>
+            <option value="asignada" {% if filters.status == 'asignada' %}selected{% endif %}>Asignada</option>
+            <option value="en_fumigacion" {% if filters.status == 'en_fumigacion' %}selected{% endif %}>En fumigaci&oacute;n</option>
+            <option value="finalizada" {% if filters.status == 'finalizada' %}selected{% endif %}>Finalizada</option>
         </select>
     </div>
     <div>
         <label class="form-label">Cliente</label>
-        <input type="text" class="form-control" id="clientFilter" placeholder="Buscar cliente">
+        <input type="text" class="form-control" name="client" placeholder="Buscar cliente" value="{{ filters.client }}">
     </div>
     <div>
         <label class="form-label">Productor</label>
-        <input type="text" class="form-control" id="growerFilter" placeholder="Buscar productor">
+        <input type="text" class="form-control" name="grower" placeholder="Buscar productor" value="{{ filters.grower }}">
     </div>
     <div>
         <label class="form-label">Desde</label>
-        <input type="date" class="form-control" id="dateFrom">
+        <input type="date" class="form-control" name="date_from" value="{{ filters.date_from }}">
     </div>
     <div>
         <label class="form-label">Hasta</label>
-        <input type="date" class="form-control" id="dateTo">
+        <input type="date" class="form-control" name="date_to" value="{{ filters.date_to }}">
     </div>
     <div>
-        <button type="button" class="btn btn-outline-secondary" id="clearFilters">Limpiar</button>
+        <label class="form-label">Orden</label>
+        <select class="form-select" name="sort">
+            <option value="lot_number_asc" {% if filters.sort == 'lot_number_asc' %}selected{% endif %}>Lote ascendente</option>
+            <option value="lot_number_desc" {% if filters.sort == 'lot_number_desc' %}selected{% endif %}>Lote descendente</option>
+            <option value="created_desc" {% if filters.sort == 'created_desc' %}selected{% endif %}>M&aacute;s recientes</option>
+            <option value="created_asc" {% if filters.sort == 'created_asc' %}selected{% endif %}>M&aacute;s antiguos</option>
+        </select>
+    </div>
+    <div>
+        <button type="submit" class="btn btn-primary">Aplicar</button>
+    </div>
+    <div>
+        <a class="btn btn-outline-secondary" href="{{ url_for('list_lots', alert=active_alert.key if active_alert else None, labels_url=labels_url if labels_url else None) }}">Limpiar</a>
     </div>
 </form>
 
@@ -105,15 +132,25 @@
                     </span>
                 </td>
                 <td>
-                    {% if lot.net_weight == 0 %}
+                    {% if lot.net_weight is none or lot.net_weight == 0 %}
                     <span class="status-badge status-unknown">Pendiente</span>
                     {% else %}
                     {{ lot.net_weight }}
                     {% endif %}
                 </td>
                 <td class="actions">
-                    {% if lot.net_weight == 0 %}
-                    <a href="{{ url_for('register_full_truck_weight', lot_id=lot.id) }}" class="btn btn-sm btn-primary">Registrar peso</a>
+                    {% if (lot.net_weight is none or lot.net_weight == 0) and (current_user.has_role('Admin') or (current_user.from_area('Materia Prima') and current_user.has_role('Contribuidor'))) %}
+                    {% set next_url = url_for('list_lots') + ('?' + current_query_string if current_query_string else '') %}
+                    <form method="POST" action="{{ url_for('update_lot_weight_inline', lot_id=lot.id) }}" class="inline-weight-form">
+                        {{ csrf_form.hidden_tag() }}
+                        <input type="hidden" name="next" value="{{ next_url }}">
+                        <div class="inline-weight-grid">
+                            <input type="number" step="0.01" min="0" name="loaded_truck_weight" class="form-control form-control-sm" placeholder="Cargado" required data-inline-loaded>
+                            <input type="number" step="0.01" min="0" name="empty_truck_weight" class="form-control form-control-sm" placeholder="Vacío" required data-inline-empty>
+                        </div>
+                        <div class="form-help" data-inline-preview data-tare="{{ lot.raw_material_packaging.tare if lot.raw_material_packaging else 0 }}" data-quantity="{{ lot.packagings_quantity }}">Neto: 0,00 kg</div>
+                        <button type="submit" class="btn btn-sm btn-primary mt-2">Guardar peso</button>
+                    </form>
                     {% endif %}
                     <a href="{{ url_for('lot_labels_pdf', lot_id=lot.id) }}" class="btn btn-sm btn-outline-secondary" target="_blank">Etiquetas</a>
                 </td>
@@ -131,55 +168,31 @@
         </tbody>
     </table>
 </div>
-
+{% include "_pagination.html" %}
 <script>
-    (function() {
-        const statusFilter = document.getElementById('statusFilter');
-        const clientFilter = document.getElementById('clientFilter');
-        const growerFilter = document.getElementById('growerFilter');
-        const dateFrom = document.getElementById('dateFrom');
-        const dateTo = document.getElementById('dateTo');
-        const clearFilters = document.getElementById('clearFilters');
-        const rows = Array.from(document.querySelectorAll('#lotsTable tbody tr'));
+    (function () {
+        var forms = document.querySelectorAll('.inline-weight-form');
+        if (!forms.length) return;
+        var formatter = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-        function normalize(value) {
-            return (value || '').toLowerCase();
-        }
+        forms.forEach(function (form) {
+            var loaded = form.querySelector('[data-inline-loaded]');
+            var empty = form.querySelector('[data-inline-empty]');
+            var preview = form.querySelector('[data-inline-preview]');
+            if (!loaded || !empty || !preview) return;
 
-        function applyFilters() {
-            const status = statusFilter.value;
-            const client = normalize(clientFilter.value);
-            const grower = normalize(growerFilter.value);
-            const from = dateFrom.value ? new Date(dateFrom.value) : null;
-            const to = dateTo.value ? new Date(dateTo.value) : null;
+            function refresh() {
+                var tare = Number(preview.dataset.tare || 0);
+                var quantity = Number(preview.dataset.quantity || 0);
+                var loadedValue = Number(loaded.value || 0);
+                var emptyValue = Number(empty.value || 0);
+                var net = loadedValue - emptyValue - (tare * quantity);
+                preview.textContent = 'Neto: ' + formatter.format(net) + ' kg';
+            }
 
-            rows.forEach((row) => {
-                const rowStatus = row.dataset.status || '';
-                const rowClient = normalize(row.dataset.client);
-                const rowGrower = normalize(row.dataset.grower);
-                const rowDate = row.dataset.date ? new Date(row.dataset.date) : null;
-
-                const statusOk = !status || rowStatus === status;
-                const clientOk = !client || rowClient.includes(client);
-                const growerOk = !grower || rowGrower.includes(grower);
-                const fromOk = !from || (rowDate && rowDate >= from);
-                const toOk = !to || (rowDate && rowDate <= to);
-
-                row.style.display = (statusOk && clientOk && growerOk && fromOk && toOk) ? '' : 'none';
-            });
-        }
-
-        [statusFilter, clientFilter, growerFilter, dateFrom, dateTo].forEach((el) => {
-            el.addEventListener('input', applyFilters);
-        });
-
-        clearFilters.addEventListener('click', function() {
-            statusFilter.value = '';
-            clientFilter.value = '';
-            growerFilter.value = '';
-            dateFrom.value = '';
-            dateTo.value = '';
-            applyFilters();
+            loaded.addEventListener('input', refresh);
+            empty.addEventListener('input', refresh);
+            refresh();
         });
     })();
 </script>

@@ -4,7 +4,7 @@ from app import db, login_manager
 from app.basemodel import BaseModel
 
 class QCMixin(object):
-    date = db.Column(db.Date, default=date.today)
+    date = db.Column(db.Date, default=date.today, index=True)
     time = db.Column(db.Time, default=lambda: datetime.now().time())
     units = db.Column(db.Integer, nullable=False, default=0)
     inshell_weight = db.Column(db.Float, nullable=False)
@@ -36,17 +36,17 @@ class QCMixin(object):
 # Association tables for many-to-many relationships
 area_user = db.Table('area_user',
     db.Column('area_id', db.Integer, db.ForeignKey('areas.id'), primary_key=True),
-    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True, index=True)
 )
 
 role_user = db.Table('role_user',
     db.Column('role_id', db.Integer, db.ForeignKey('roles.id'), primary_key=True),
-    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True, index=True)
 )
 
 client_user = db.Table('client_user',
     db.Column('client_id', db.Integer, db.ForeignKey('clients.id'), primary_key=True),
-    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True, index=True)
 )
 
 class User(UserMixin, BaseModel):
@@ -112,7 +112,7 @@ class RawMaterialPackaging(BaseModel):
 
 rawmaterialreception_grower = db.Table('rawmaterialreception_grower',
     db.Column('reception_id', db.Integer, db.ForeignKey('rawmaterialreceptions.id'), primary_key=True),
-    db.Column('grower_id', db.Integer, db.ForeignKey('growers.id'), primary_key=True)
+    db.Column('grower_id', db.Integer, db.ForeignKey('growers.id'), primary_key=True, index=True)
 )
 
 class Grower(BaseModel):
@@ -127,7 +127,7 @@ class Grower(BaseModel):
 
 rawmaterialreception_client = db.Table('rawmaterialreception_client',
     db.Column('reception_id', db.Integer, db.ForeignKey('rawmaterialreceptions.id'), primary_key=True),
-    db.Column('client_id', db.Integer, db.ForeignKey('clients.id'), primary_key=True)
+    db.Column('client_id', db.Integer, db.ForeignKey('clients.id'), primary_key=True, index=True)
 )
 
 class Client(BaseModel):
@@ -143,6 +143,9 @@ class Client(BaseModel):
 
 class RawMaterialReception(BaseModel):
     __tablename__ = 'rawmaterialreceptions'
+    __table_args__ = (
+        db.Index('ix_rawmaterialreceptions_date', 'date'),
+    )
     waybill = db.Column(db.Integer, nullable=False)
     date = db.Column(db.Date, default=date.today, nullable=False)
     time = db.Column(db.Time, default=lambda: datetime.utcnow().time(), nullable=False)
@@ -162,11 +165,19 @@ class RawMaterialReception(BaseModel):
 
 class Lot(BaseModel):
     __tablename__ = 'lots'
+    __table_args__ = (
+        db.CheckConstraint("fumigation_status IN ('1', '2', '3', '4')", name='ck_lots_fumigation_status_valid'),
+        db.Index('ix_lots_created_at', 'created_at'),
+        db.Index('ix_lots_fumigation_status', 'fumigation_status'),
+        db.Index('ix_lots_rawmaterialreception_id', 'rawmaterialreception_id'),
+        db.Index('ix_lots_variety_id', 'variety_id'),
+        db.Index('ix_lots_rawmaterialpackaging_id', 'rawmaterialpackaging_id'),
+    )
     lot_number = db.Column(db.Integer, unique=True, nullable=False)
     packagings_quantity = db.Column(db.Integer, nullable=False)
     net_weight = db.Column(db.Float, nullable=True, default=0)
     has_qc = db.Column(db.Boolean, default=False, nullable=False)
-    fumigation_status = db.Column(db.String(1), default=1, nullable=False)
+    fumigation_status = db.Column(db.String(1), default='1', nullable=False)
     on_warehouse = db.Column(db.Boolean, default=True, nullable=False)
 
     #One-to-One relationship
@@ -180,26 +191,44 @@ class Lot(BaseModel):
 
 class FullTruckWeight(BaseModel):
     __tablename__ = 'fulltruckweights'
+    __table_args__ = (
+        db.CheckConstraint('loaded_truck_weight > 0', name='ck_fulltruckweights_loaded_positive'),
+        db.CheckConstraint('empty_truck_weight >= 0', name='ck_fulltruckweights_empty_non_negative'),
+    )
     loaded_truck_weight = db.Column(db.Float, nullable=False)
     empty_truck_weight = db.Column(db.Float, nullable=False, default=0)
 
     # One-to-One relationship
-    lot_id = db.Column(db.Integer, db.ForeignKey('lots.id'))
+    lot_id = db.Column(db.Integer, db.ForeignKey('lots.id'), index=True)
 
 class LotQC(BaseModel, QCMixin):
     __tablename__ = 'lotsqc'
-    lot_id = db.Column(db.Integer, db.ForeignKey('lots.id'))
+    __table_args__ = (
+        db.CheckConstraint(
+            'units = lessthan30 + between3032 + between3234 + between3436 + morethan36',
+            name='ck_lotsqc_units_breakdown',
+        ),
+        db.CheckConstraint('inshell_weight > 0', name='ck_lotsqc_inshell_positive'),
+    )
+    lot_id = db.Column(db.Integer, db.ForeignKey('lots.id'), index=True)
     analyst = db.Column(db.String(64), nullable=True)
 
 class SampleQC(BaseModel, QCMixin):
     __tablename__ = 'samplesqc'
+    __table_args__ = (
+        db.CheckConstraint(
+            'units = lessthan30 + between3032 + between3234 + between3436 + morethan36',
+            name='ck_samplesqc_units_breakdown',
+        ),
+        db.CheckConstraint('inshell_weight > 0', name='ck_samplesqc_inshell_positive'),
+    )
     grower = db.Column(db.String(64), unique=False, nullable=True)
     brought_by = db.Column(db.String(64), unique=False, nullable=True)
     analyst = db.Column(db.String(64), unique=False, nullable=True)
 
 fumigation_lot = db.Table('fumigation_lot',
     db.Column('fumigation_id', db.Integer, db.ForeignKey('fumigations.id'), primary_key=True),
-    db.Column('lot_id', db.Integer, db.ForeignKey('lots.id'), primary_key=True)
+    db.Column('lot_id', db.Integer, db.ForeignKey('lots.id'), primary_key=True, index=True)
 )
 
 class Fumigation(BaseModel):

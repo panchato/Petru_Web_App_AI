@@ -1,6 +1,7 @@
 import logging
 import os
 from flask_migrate import init, migrate as migrate_function, upgrade
+from sqlalchemy import text
 from app import app, db, bcrypt
 from app.models import User, Role, Area, Client, Grower, Variety, RawMaterialPackaging
 
@@ -24,11 +25,14 @@ def run_migrations():
         try:
             migrate_function(directory='migrations', message='Auto migration')
             logging.info("Migration generated.")
-        except Exception as e:
+        except BaseException as e:
             logging.warning(f"Migration skipped or failed: {e}")
 
-        upgrade(directory='migrations')
-        logging.info("Database upgraded successfully.")
+        try:
+            upgrade(directory='migrations')
+            logging.info("Database upgraded successfully.")
+        except BaseException as e:
+            logging.warning(f"Database upgrade skipped or failed: {e}")
 
 
 def create_tables():
@@ -36,6 +40,35 @@ def create_tables():
     with app.app_context():
         db.create_all()
         logging.info("Database tables created.")
+
+
+def ensure_operational_indexes():
+    """Ensure indexes required by operational dashboard queries exist."""
+    statements = [
+        "CREATE INDEX IF NOT EXISTS ix_lots_created_at ON lots (created_at)",
+        "CREATE INDEX IF NOT EXISTS ix_lots_fumigation_status ON lots (fumigation_status)",
+        # lot_number is already covered by UNIQUE constraint; avoid duplicate index.
+        "CREATE INDEX IF NOT EXISTS ix_rawmaterialreceptions_date ON rawmaterialreceptions (date)",
+        "CREATE INDEX IF NOT EXISTS ix_lots_rawmaterialreception_id ON lots (rawmaterialreception_id)",
+        "CREATE INDEX IF NOT EXISTS ix_lots_variety_id ON lots (variety_id)",
+        "CREATE INDEX IF NOT EXISTS ix_lots_rawmaterialpackaging_id ON lots (rawmaterialpackaging_id)",
+        "CREATE INDEX IF NOT EXISTS ix_fulltruckweights_lot_id ON fulltruckweights (lot_id)",
+        "CREATE INDEX IF NOT EXISTS ix_lotsqc_lot_id ON lotsqc (lot_id)",
+        "CREATE INDEX IF NOT EXISTS ix_lotsqc_date ON lotsqc (date)",
+        "CREATE INDEX IF NOT EXISTS ix_samplesqc_date ON samplesqc (date)",
+        "CREATE INDEX IF NOT EXISTS ix_area_user_user_id ON area_user (user_id)",
+        "CREATE INDEX IF NOT EXISTS ix_role_user_user_id ON role_user (user_id)",
+        "CREATE INDEX IF NOT EXISTS ix_client_user_user_id ON client_user (user_id)",
+        "CREATE INDEX IF NOT EXISTS ix_rawmaterialreception_client_client_id ON rawmaterialreception_client (client_id)",
+        "CREATE INDEX IF NOT EXISTS ix_rawmaterialreception_grower_grower_id ON rawmaterialreception_grower (grower_id)",
+        "CREATE INDEX IF NOT EXISTS ix_fumigation_lot_lot_id ON fumigation_lot (lot_id)",
+    ]
+    with app.app_context():
+        with db.engine.connect() as conn:
+            for stmt in statements:
+                conn.execute(text(stmt))
+            conn.commit()
+        logging.info("Operational dashboard indexes ensured.")
 
 
 def create_admin_user():
@@ -107,42 +140,74 @@ def create_admin_user():
 def populate_test_data():
     """Populate database with test data."""
     with app.app_context():
-        # Check if data already exists
-        if Client.query.first():
-            logging.info("Test data already exists. Skipping population.")
-            return
-
         # Clients
         clients = [
-            {"name": "Cliente A", "tax_id": "1234567890", "address": "123 Main St", "comuna": "Comuna1"},
-            {"name": "Cliente B", "tax_id": "0987654321", "address": "456 Side St", "comuna": "Comuna2"}
+            {"name": "EXPORTADORA BRIX LTDA", "tax_id": "9100000001", "address": "Ruta 5 Sur Km 1", "comuna": "Rengo"},
+            {"name": "EXPORTADORA ALNUEZ SPA", "tax_id": "9100000002", "address": "Camino Interior 220", "comuna": "San Fernando"},
+            {"name": "ATACAMA DRIED FRUIT SPA", "tax_id": "9100000003", "address": "Av. Las Industrias 455", "comuna": "Copiapo"},
         ]
-        for client_data in clients:
-            db.session.add(Client(**client_data))
 
         # Growers
         growers = [
-            {"name": "Productor A", "tax_id": "1111111111", "csg_code": "CSG1001"},
-            {"name": "Productor B", "tax_id": "2222222222", "csg_code": "CSG1002"}
+            {"name": "SOC AGRICOLA EL CARMEN DE PUCALAN LIMITADA", "tax_id": "9200000001", "csg_code": "CSG0000001"},
+            {"name": "AGRICOLA LOS ALPES SPA", "tax_id": "9200000002", "csg_code": "CSG0000002"},
+            {"name": "AGRICOLA HUERTOS DEL VALLE S A", "tax_id": "9200000003", "csg_code": "CSG0000003"},
+            {"name": "AGRICOLA LA ARBOLEDA LIMITADA", "tax_id": "9200000004", "csg_code": "CSG0000004"},
+            {"name": "AGRICOLA LOMA LINDA LIMITADA", "tax_id": "9200000005", "csg_code": "CSG0000005"},
+            {"name": "SUC GABRIEL MESQUIDA RIERA", "tax_id": "9200000006", "csg_code": "CSG0000006"},
+            {"name": "AURELIO SAN NICOLAS ROSIQUE", "tax_id": "9200000007", "csg_code": "CSG0000007"},
+            {"name": "AGRICOLA EL CASTILLO LIMITADA", "tax_id": "9200000008", "csg_code": "CSG0000008"},
+            {"name": "AGRICOLA FORESTAL Y GANADERA SANTA INES DE CUNCUMEN LIMITADA", "tax_id": "9200000009", "csg_code": "CSG0000009"},
+            {"name": "AGRICOLA S.P. LIMITADA", "tax_id": "9200000010", "csg_code": "CSG0000010"},
         ]
-        for grower_data in growers:
-            db.session.add(Grower(**grower_data))
 
         # Varieties
         varieties = [
-            {"name": "Variedad A"},
-            {"name": "Variedad B"}
+            {"name": "CHANDLER"},
+            {"name": "SERR"},
+            {"name": "HOWARD"},
         ]
-        for variety_data in varieties:
-            db.session.add(Variety(**variety_data))
 
-        # Packagings
+        # Packagings (kept as-is)
         packagings = [
             {"name": "Bins Plásticos IFCO", "tare": 42.0},
-            {"name": "Maxisaco Polipropileno", "tare": 2.5}
+            {"name": "Maxisaco Polipropileno", "tare": 2.5},
         ]
+
+        for client_data in clients:
+            client = Client.query.filter_by(name=client_data["name"]).first()
+            if client is None:
+                client = Client.query.filter_by(tax_id=client_data["tax_id"]).first()
+            if client is None:
+                db.session.add(Client(**client_data))
+            else:
+                client.tax_id = client_data["tax_id"]
+                client.address = client_data["address"]
+                client.comuna = client_data["comuna"]
+                client.is_active = True
+
+        for grower_data in growers:
+            grower = Grower.query.filter_by(name=grower_data["name"]).first()
+            if grower is None:
+                grower = Grower.query.filter_by(tax_id=grower_data["tax_id"]).first()
+            if grower is None:
+                db.session.add(Grower(**grower_data))
+            else:
+                grower.tax_id = grower_data["tax_id"]
+                grower.csg_code = grower_data["csg_code"]
+                grower.is_active = True
+
+        for variety_data in varieties:
+            variety = Variety.query.filter_by(name=variety_data["name"]).first()
+            if variety is None:
+                db.session.add(Variety(**variety_data))
+
         for packaging_data in packagings:
-            db.session.add(RawMaterialPackaging(**packaging_data))
+            packaging = RawMaterialPackaging.query.filter_by(name=packaging_data["name"]).first()
+            if packaging is None:
+                db.session.add(RawMaterialPackaging(**packaging_data))
+            else:
+                packaging.tare = packaging_data["tare"]
 
         try:
             db.session.commit()
@@ -157,6 +222,7 @@ def setup():
     logging.info("=== Starting Database Setup ===")
     run_migrations()
     create_tables()
+    ensure_operational_indexes()
     create_admin_user()
     populate_test_data()
     logging.info("=== Database Setup Complete ===")

@@ -1,0 +1,30 @@
+{% if pagination and pagination.pages > 1 %}
+{% set start_row = pagination.first if pagination.total > 0 else 0 %}
+{% set end_row = pagination.last if pagination.total > 0 else 0 %}
+<nav aria-label="Paginación" class="table-pagination">
+    <div class="subtle">Mostrando {{ start_row }}-{{ end_row }} de {{ pagination.total }}</div>
+    <ul class="pagination pagination-sm mb-0">
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for(request.endpoint, page=1, **pagination_args) }}" aria-label="Primera">«</a>
+        </li>
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for(request.endpoint, page=pagination.prev_num, **pagination_args) }}" aria-label="Anterior">‹</a>
+        </li>
+        {% for page_num in pagination.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
+            {% if page_num %}
+            <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for(request.endpoint, page=page_num, **pagination_args) }}">{{ page_num }}</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+        {% endfor %}
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for(request.endpoint, page=pagination.next_num, **pagination_args) }}" aria-label="Siguiente">›</a>
+        </li>
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for(request.endpoint, page=pagination.pages, **pagination_args) }}" aria-label="Última">»</a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
