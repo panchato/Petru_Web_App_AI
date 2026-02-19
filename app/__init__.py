@@ -11,11 +11,11 @@ from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import event
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, timezone
 
 app = Flask(__name__)
 app.config.from_object(Config)
-app.config["DASHBOARD_LAST_COMMIT_AT"] = datetime.utcnow().isoformat()
+app.config["DASHBOARD_LAST_COMMIT_AT"] = datetime.now(timezone.utc).isoformat()
 for path_key in ("UPLOAD_ROOT", "UPLOAD_PATH_IMAGE", "UPLOAD_PATH_PDF"):
     os.makedirs(app.config[path_key], exist_ok=True)
 
@@ -86,6 +86,6 @@ def _log_response(response):
 
 @event.listens_for(Session, "after_commit")
 def _touch_dashboard_version(_session):
-    app.config["DASHBOARD_LAST_COMMIT_AT"] = datetime.utcnow().isoformat()
+    app.config["DASHBOARD_LAST_COMMIT_AT"] = datetime.now(timezone.utc).isoformat()
 
 from app import routes, models

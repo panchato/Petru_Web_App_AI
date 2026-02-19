@@ -458,8 +458,8 @@ def add_role():
 def assign_role():
     form = AssignRoleForm()
     if form.validate_on_submit():
-        user = User.query.get(form.user_id.data)
-        role = Role.query.get(form.role_id.data)
+        user = db.session.get(User, form.user_id.data)
+        role = db.session.get(Role, form.role_id.data)
         if user is None or role is None:
             flash('Usuario o rol no encontrado.', 'error')
             return redirect(url_for('assign_role'))
@@ -530,8 +530,8 @@ def add_area():
 def assign_area():
     form = AssignAreaForm()
     if form.validate_on_submit():
-        user = User.query.get(form.user_id.data)
-        area = Area.query.get(form.area_id.data)
+        user = db.session.get(User, form.user_id.data)
+        area = db.session.get(Area, form.area_id.data)
         if user is None or area is None:
             flash('Usuario o área no encontrada.', 'error')
             return redirect(url_for('assign_area'))
@@ -824,8 +824,8 @@ def create_raw_material_reception():
             observations=form.observations.data
         ) # type: ignore
 
-        selected_grower = Grower.query.get(form.grower_id.data)
-        selected_client = Client.query.get(form.client_id.data)
+        selected_grower = db.session.get(Grower, form.grower_id.data)
+        selected_client = db.session.get(Client, form.client_id.data)
         if selected_grower:
             reception.growers.append(selected_grower)
         if selected_client:

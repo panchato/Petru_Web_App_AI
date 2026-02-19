@@ -1,5 +1,5 @@
 from flask_login import UserMixin
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from app import db, login_manager
 from app.basemodel import BaseModel
 
@@ -77,7 +77,7 @@ class User(UserMixin, BaseModel):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 class Role(BaseModel):
     __tablename__ = 'roles'
@@ -148,7 +148,7 @@ class RawMaterialReception(BaseModel):
     )
     waybill = db.Column(db.Integer, nullable=False)
     date = db.Column(db.Date, default=date.today, nullable=False)
-    time = db.Column(db.Time, default=lambda: datetime.utcnow().time(), nullable=False)
+    time = db.Column(db.Time, default=lambda: datetime.now(timezone.utc).time().replace(tzinfo=None), nullable=False)
     truck_plate = db.Column(db.String(6), nullable=False)
     trucker_name = db.Column(db.String(64), nullable=True)
     observations = db.Column(db.String(255), nullable=True)

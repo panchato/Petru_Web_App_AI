@@ -59,7 +59,7 @@ class QCService:
     @staticmethod
     def create_lot_qc(payload, inshell_image_path, shelled_image_path):
         metrics = QCService._build_qc_metrics(payload)
-        lot = Lot.query.get(payload["lot_id"])
+        lot = db.session.get(Lot, payload["lot_id"])
         if not lot:
             raise QCValidationError("El lote seleccionado no existe.")
         if lot.has_qc:

@@ -120,7 +120,7 @@ class QCServiceTests(unittest.TestCase):
                 inshell_image_path="images/test1.jpg",
                 shelled_image_path="images/test2.jpg",
             )
-            lot = Lot.query.get(self.lot_id)
+            lot = db.session.get(Lot, self.lot_id)
             self.assertTrue(lot.has_qc)
 
 

@@ -115,7 +115,7 @@ class FumigationServiceTests(unittest.TestCase):
 
     def test_reject_assign_when_lot_not_available(self):
         with app.app_context():
-            lot = Lot.query.get(self.lot_ids[0])
+            lot = db.session.get(Lot, self.lot_ids[0])
             lot.fumigation_status = "3"
             db.session.add(lot)
             db.session.commit()
