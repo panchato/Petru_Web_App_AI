@@ -89,37 +89,16 @@
 </div>
 {% endif %}
 
+<script src="{{ url_for('static', filename='js/searchable-select.js') }}"></script>
 <script>
     (function () {
-        function bindSearch(searchId, selectId) {
-            var search = document.getElementById(searchId);
-            var select = document.getElementById(selectId);
-            if (!search || !select) return;
-
-            var originalOptions = Array.from(select.options).map(function (option) {
-                return { value: option.value, text: option.text, selected: option.selected };
-            });
-
-            function render(filterText) {
-                var selectedValue = select.value;
-                var normalized = (filterText || '').toLowerCase().trim();
-                select.innerHTML = '';
-                originalOptions.forEach(function (item) {
-                    if (!normalized || item.text.toLowerCase().indexOf(normalized) !== -1) {
-                        var opt = document.createElement('option');
-                        opt.value = item.value;
-                        opt.text = item.text;
-                        opt.selected = item.value === selectedValue || (item.selected && !selectedValue);
-                        select.appendChild(opt);
-                    }
-                });
-            }
-
-            search.addEventListener('input', function () { render(search.value); });
+        if (!window.SearchableSelect) {
+            return;
         }
-
-        bindSearch('clientSearch', 'client_id');
-        bindSearch('growerSearch', 'grower_id');
+        window.SearchableSelect.bindMany([
+            { searchInputId: 'clientSearch', selectId: 'client_id' },
+            { searchInputId: 'growerSearch', selectId: 'grower_id' }
+        ]);
     })();
 </script>
 

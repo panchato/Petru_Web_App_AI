@@ -67,71 +67,112 @@
     </main>
 
     <script>
-        const intFormatter = new Intl.NumberFormat("es-CL");
-        const kgFormatter = new Intl.NumberFormat("es-CL", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+        (function () {
+            'use strict';
 
-        function getAlertByKey(alerts, key) {
-            return (alerts || []).find((item) => item.key === key) || { count: 0 };
-        }
-
-        function updateAlertCardState(alertKey, count) {
-            const card = document.querySelector(`[data-alert-key="${alertKey}"]`);
-            if (!card) {
-                return;
-            }
-            card.classList.toggle("has-alert", count > 0);
-            card.style.order = String(-(count || 0));
-        }
-
-        function updateDataHealth(generatedAt) {
-            const healthChip = document.getElementById("data-health");
-            const healthText = document.getElementById("data-health-text");
-            const generated = generatedAt ? new Date(generatedAt) : null;
-            const ageSeconds = generated ? Math.floor((Date.now() - generated.getTime()) / 1000) : Number.POSITIVE_INFINITY;
-            const isStale = !Number.isFinite(ageSeconds) || ageSeconds > 120;
-            healthChip.classList.toggle("stale", isStale);
-            healthText.textContent = isStale ? "desactualizado" : "al día";
-        }
-
-        async function refreshDashboard() {
-            const response = await fetch("/api/dashboard/summary", { cache: "no-store" });
-            const data = await response.json();
-
-            document.getElementById("kpi-lots-today").textContent = intFormatter.format(data.today?.lots_received || 0);
-            document.getElementById("kpi-kg-today").textContent = kgFormatter.format(data.today?.kilograms_received || 0);
-
-            const statusMap = {};
-            (data.fumigation_status || []).forEach((item) => {
-                statusMap[item.key] = item.count;
+            const intFormatter = new Intl.NumberFormat("es-CL");
+            const kgFormatter = new Intl.NumberFormat("es-CL", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
             });
-            document.getElementById("status-available").textContent = intFormatter.format(statusMap.AVAILABLE || 0);
-            document.getElementById("status-assigned").textContent = intFormatter.format(statusMap.ASSIGNED || 0);
-            document.getElementById("status-started").textContent = intFormatter.format(statusMap.STARTED || 0);
-            document.getElementById("status-completed").textContent = intFormatter.format(statusMap.COMPLETED || 0);
 
-            const alertNoQc = getAlertByKey(data.alerts, "no_qc_over_24h");
-            const alertNoWeight = getAlertByKey(data.alerts, "missing_net_weight_over_12h");
-            const alertNoFumigation = getAlertByKey(data.alerts, "no_fumigation_over_48h");
+            const getAlertByKey = (alerts, key) => {
+                return (alerts || []).find((item) => item.key === key) || { count: 0 };
+            };
 
-            document.getElementById("alert-no-qc").textContent = intFormatter.format(alertNoQc.count || 0);
-            document.getElementById("alert-no-weight").textContent = intFormatter.format(alertNoWeight.count || 0);
-            document.getElementById("alert-no-fumigation").textContent = intFormatter.format(alertNoFumigation.count || 0);
+            const updateAlertCardState = (alertKey, count) => {
+                const card = document.querySelector(`[data-alert-key="${alertKey}"]`);
+                if (!card) {
+                    return;
+                }
+                card.classList.toggle("has-alert", count > 0);
+                card.style.order = String(-(count || 0));
+            };
 
-            updateAlertCardState("no_qc_over_24h", alertNoQc.count || 0);
-            updateAlertCardState("missing_net_weight_over_12h", alertNoWeight.count || 0);
-            updateAlertCardState("no_fumigation_over_48h", alertNoFumigation.count || 0);
+            const updateDataHealth = (generatedAt) => {
+                const healthChip = document.getElementById("data-health");
+                const healthText = document.getElementById("data-health-text");
+                const generated = generatedAt ? new Date(generatedAt) : null;
+                const ageSeconds = generated ? Math.floor((Date.now() - generated.getTime()) / 1000) : Number.POSITIVE_INFINITY;
+                const isStale = !Number.isFinite(ageSeconds) || ageSeconds > 120;
+                healthChip.classList.toggle("stale", isStale);
+                healthText.textContent = isStale ? "desactualizado" : "al día";
+            };
 
-            document.getElementById("dashboard-updated").textContent = `Actualizado: ${new Date().toLocaleString()}`;
-            updateDataHealth(data.generated_at);
-        }
+            const markHealthStale = () => {
+                const chip = document.getElementById("data-health");
+                if (chip) {
+                    chip.classList.add("stale");
+                }
+            };
 
-        window.addEventListener("DOMContentLoaded", async () => {
-            await refreshDashboard();
-            setInterval(refreshDashboard, 60000);
-        });
+            const renderDashboard = (data) => {
+                const requiredIds = [
+                    "kpi-lots-today",
+                    "kpi-kg-today",
+                    "status-available",
+                    "status-assigned",
+                    "status-started",
+                    "status-completed",
+                    "alert-no-qc",
+                    "alert-no-weight",
+                    "alert-no-fumigation",
+                    "dashboard-updated",
+                    "data-health",
+                    "data-health-text"
+                ];
+                for (const id of requiredIds) {
+                    if (!document.getElementById(id)) {
+                        console.warn(`Dashboard element #${id} not found, aborting render`);
+                        return;
+                    }
+                }
+
+                document.getElementById("kpi-lots-today").textContent = intFormatter.format(data.today?.lots_received || 0);
+                document.getElementById("kpi-kg-today").textContent = kgFormatter.format(data.today?.kilograms_received || 0);
+
+                const statusMap = {};
+                (data.fumigation_status || []).forEach((item) => {
+                    statusMap[item.key] = item.count;
+                });
+
+                document.getElementById("status-available").textContent = intFormatter.format(statusMap.AVAILABLE || 0);
+                document.getElementById("status-assigned").textContent = intFormatter.format(statusMap.ASSIGNED || 0);
+                document.getElementById("status-started").textContent = intFormatter.format(statusMap.STARTED || 0);
+                document.getElementById("status-completed").textContent = intFormatter.format(statusMap.COMPLETED || 0);
+
+                const alertNoQc = getAlertByKey(data.alerts, "no_qc_over_24h");
+                const alertNoWeight = getAlertByKey(data.alerts, "missing_net_weight_over_12h");
+                const alertNoFumigation = getAlertByKey(data.alerts, "no_fumigation_over_48h");
+                document.getElementById("alert-no-qc").textContent = intFormatter.format(alertNoQc.count || 0);
+                document.getElementById("alert-no-weight").textContent = intFormatter.format(alertNoWeight.count || 0);
+                document.getElementById("alert-no-fumigation").textContent = intFormatter.format(alertNoFumigation.count || 0);
+                updateAlertCardState("no_qc_over_24h", alertNoQc.count || 0);
+                updateAlertCardState("missing_net_weight_over_12h", alertNoWeight.count || 0);
+                updateAlertCardState("no_fumigation_over_48h", alertNoFumigation.count || 0);
+                document.getElementById("dashboard-updated").textContent = `Actualizado: ${new Date().toLocaleString()}`;
+                updateDataHealth(data.generated_at);
+            };
+
+            const refreshDashboard = async () => {
+                try {
+                    const response = await fetch("/api/dashboard/summary");
+                    if (!response.ok) {
+                        throw new Error(`Server returned ${response.status}`);
+                    }
+                    const data = await response.json();
+                    renderDashboard(data);
+                } catch (err) {
+                    console.error("Dashboard refresh failed:", err);
+                    markHealthStale();
+                }
+            };
+
+            window.addEventListener("DOMContentLoaded", async () => {
+                await refreshDashboard();
+                setInterval(() => refreshDashboard().catch(err => console.error("Dashboard refresh failed:", err)), 60000);
+            });
+        })();
     </script>
 </body>
 </html>

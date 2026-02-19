@@ -1,60 +1,5 @@
 {% extends "base.html" %}
 {% block content %}
-<script>
-    function updateShelledWeight() {
-        const extraLight = parseFloat($('#extra_light').val()) || 0;
-        const light = parseFloat($('#light').val()) || 0;
-        const lightAmber = parseFloat($('#light_amber').val()) || 0;
-        const amber = parseFloat($('#amber').val()) || 0;
-        const total = extraLight + light + lightAmber + amber;
-        if (total > 0) {
-            $('#shelled_weight').val(total.toFixed(2));
-        } else {
-            $('#shelled_weight').val('');
-        }
-    }
-
-    function updateYieldPercentage() {
-        const inshell = parseFloat($('#inshell_weight').val());
-        const shelled = parseFloat($('#shelled_weight').val());
-        if (!isNaN(inshell) && inshell > 0 && !isNaN(shelled)) {
-            const yieldPct = (shelled / inshell) * 100;
-            $('#yieldpercentage').val(yieldPct.toFixed(2));
-        } else {
-            $('#yieldpercentage').val('');
-        }
-    }
-
-    function formatYieldPercentage() {
-        const current = parseFloat($('#yieldpercentage').val());
-        if (!isNaN(current)) {
-            $('#yieldpercentage').val(current.toFixed(2));
-        }
-    }
-
-    function updateUnits() {
-        const less30 = parseInt($('#lessthan30').val(), 10) || 0;
-        const between3032 = parseInt($('#between3032').val(), 10) || 0;
-        const between3234 = parseInt($('#between3234').val(), 10) || 0;
-        const between3436 = parseInt($('#between3436').val(), 10) || 0;
-        const morethan36 = parseInt($('#morethan36').val(), 10) || 0;
-        const totalUnits = less30 + between3032 + between3234 + between3436 + morethan36;
-        $('#units').val(totalUnits);
-    }
-
-    $(document).on('change', '#extra_light, #light, #light_amber, #amber', function() {
-        updateShelledWeight();
-        updateYieldPercentage();
-    });
-    $(document).on('change', '#lessthan30, #between3032, #between3234, #between3436, #morethan36', updateUnits);
-    $(document).on('change', '#inshell_weight', updateYieldPercentage);
-    $(document).ready(function() {
-        updateShelledWeight();
-        updateUnits();
-        formatYieldPercentage();
-    });
-</script>
-
 <div class="page-header">
     <div>
         <h2>Control de calidad de recepciones</h2>
@@ -264,4 +209,13 @@
         <a href="{{ url_for('qc.list_lot_qc_reports') }}" class="btn btn-outline-secondary">Cancelar</a>
     </div>
 </form>
+
+<script src="{{ url_for('static', filename='js/qc-calculator.js') }}"></script>
+<script>
+    (function () {
+        if (!window.QCCalculator) return;
+        window.QCCalculator.bind();
+    })();
+</script>
+
 {% endblock %}

@@ -88,32 +88,13 @@
     </form>
 </div>
 
+<script src="{{ url_for('static', filename='js/searchable-select.js') }}"></script>
 <script>
     (function () {
-        var search = document.getElementById('varietySearch');
-        var select = document.getElementById('variety_id');
-        if (!search || !select) return;
-
-        var originalOptions = Array.from(select.options).map(function (option) {
-            return { value: option.value, text: option.text, selected: option.selected };
-        });
-
-        function render(filterText) {
-            var selectedValue = select.value;
-            var normalized = (filterText || '').toLowerCase().trim();
-            select.innerHTML = '';
-            originalOptions.forEach(function (item) {
-                if (!normalized || item.text.toLowerCase().indexOf(normalized) !== -1) {
-                    var opt = document.createElement('option');
-                    opt.value = item.value;
-                    opt.text = item.text;
-                    opt.selected = item.value === selectedValue || (item.selected && !selectedValue);
-                    select.appendChild(opt);
-                }
-            });
+        if (!window.SearchableSelect) {
+            return;
         }
-
-        search.addEventListener('input', function () { render(search.value); });
+        window.SearchableSelect.bind('varietySearch', 'variety_id');
     })();
 </script>
 {% endblock %}

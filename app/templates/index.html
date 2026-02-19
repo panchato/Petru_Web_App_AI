@@ -115,8 +115,35 @@
             }
         }
 
+        function markSummaryStale() {
+            const agoEl = document.getElementById('opsUpdatedAgo');
+            if (!agoEl) return;
+            agoEl.textContent = '(desactualizado)';
+            agoEl.classList.remove('subtle');
+            agoEl.classList.add('text-danger');
+        }
+
         function renderSummary(data) {
             if (!data) return;
+            const criticalIds = [
+                'opsLotsToday',
+                'opsKgToday',
+                'opsTodayEmpty',
+                'opsAlertsEmpty',
+                'opsUpdatedAt',
+                'opsUpdatedAgo'
+            ];
+            for (const id of criticalIds) {
+                if (!document.getElementById(id)) {
+                    console.warn(`Dashboard element #${id} not found, aborting render`);
+                    return;
+                }
+            }
+
+            const agoEl = document.getElementById('opsUpdatedAgo');
+            agoEl.classList.remove('text-danger');
+            agoEl.classList.add('subtle');
+
             lastGeneratedAt = data.generated_at || lastGeneratedAt;
 
             const lotsToday = Number(data.today?.lots_received || 0);
@@ -169,11 +196,14 @@
                     credentials: 'same-origin',
                     headers: { 'Accept': 'application/json' }
                 });
-                if (!response.ok) return;
+                if (!response.ok) {
+                    throw new Error(`Summary refresh failed with status ${response.status}`);
+                }
                 const data = await response.json();
                 renderSummary(data);
-            } catch (_error) {
-                // Keep last successful snapshot visible if refresh fails.
+            } catch (error) {
+                console.error('Summary refresh failed:', error);
+                markSummaryStale();
             }
         }
 

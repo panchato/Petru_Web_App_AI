@@ -169,30 +169,18 @@
     </table>
 </div>
 {% include "_pagination.html" %}
+<script src="{{ url_for('static', filename='js/weight-preview.js') }}"></script>
 <script>
     (function () {
-        var forms = document.querySelectorAll('.inline-weight-form');
-        if (!forms.length) return;
-        var formatter = new Intl.NumberFormat('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-        forms.forEach(function (form) {
-            var loaded = form.querySelector('[data-inline-loaded]');
-            var empty = form.querySelector('[data-inline-empty]');
-            var preview = form.querySelector('[data-inline-preview]');
-            if (!loaded || !empty || !preview) return;
-
-            function refresh() {
-                var tare = Number(preview.dataset.tare || 0);
-                var quantity = Number(preview.dataset.quantity || 0);
-                var loadedValue = Number(loaded.value || 0);
-                var emptyValue = Number(empty.value || 0);
-                var net = loadedValue - emptyValue - (tare * quantity);
-                preview.textContent = 'Neto: ' + formatter.format(net) + ' kg';
-            }
-
-            loaded.addEventListener('input', refresh);
-            empty.addEventListener('input', refresh);
-            refresh();
+        if (!window.WeightPreview) {
+            return;
+        }
+        window.WeightPreview.bindInlineForms({
+            formSelector: '.inline-weight-form',
+            loadedSelector: '[data-inline-loaded]',
+            emptySelector: '[data-inline-empty]',
+            previewSelector: '[data-inline-preview]',
+            locale: 'es-CL'
         });
     })();
 </script>
